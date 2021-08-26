@@ -11,9 +11,18 @@ from .decode_head import BaseDecodeHead
 class CascadeFeatureFusion(BaseModule):
     """CFF Unit for ICNet."""
 
-    def __init__(self, low_channels, high_channels, out_channels, nclass,
-                 conv_cfg, norm_cfg, act_cfg, init_cfg):
+    def __init__(self,
+                 low_channels,
+                 high_channels,
+                 out_channels,
+                 nclass,
+                 conv_cfg,
+                 norm_cfg,
+                 act_cfg,
+                 align_corners=False,
+                 init_cfg=None):
         super(CascadeFeatureFusion, self).__init__(init_cfg=init_cfg)
+        self.align_corners = align_corners
         self.conv_low = ConvModule(
             low_channels,
             out_channels,
@@ -36,7 +45,10 @@ class CascadeFeatureFusion(BaseModule):
 
     def forward(self, x_low, x_high):
         x_low = resize(
-            x_low, size=x_high.size()[2:], mode='bilinear', align_corners=True)
+            x_low,
+            size=x_high.size()[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
         x_low = self.conv_low(x_low)
         x_high = self.conv_high(x_high)
         x = x_low + x_high
@@ -64,7 +76,8 @@ class ICHead(BaseDecodeHead):
             self.num_classes,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
+            act_cfg=self.act_cfg,
+            align_corners=self.align_corners)
 
         self.cff_12 = CascadeFeatureFusion(
             self.channels,
@@ -73,7 +86,8 @@ class ICHead(BaseDecodeHead):
             self.num_classes,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
+            act_cfg=self.act_cfg,
+            align_corners=self.align_corners)
 
     def forward(self, inputs):
         inputs = self._transform_inputs(inputs)
@@ -85,11 +99,17 @@ class ICHead(BaseDecodeHead):
         outputs.append(x_12_cls)
 
         up_x2 = resize(
-            x_cff_12, scale_factor=2, mode='bilinear', align_corners=True)
+            x_cff_12,
+            scale_factor=2,
+            mode='bilinear',
+            align_corners=self.align_corners)
         up_x2 = self.cls_seg(up_x2)
         outputs.append(up_x2)
         up_x8 = resize(
-            up_x2, scale_factor=4, mode='bilinear', align_corners=True)
+            up_x2,
+            scale_factor=4,
+            mode='bilinear',
+            align_corners=self.align_corners)
         outputs.append(up_x8)
         # 1 -> 1/4 -> 1/8 -> 1/16
         outputs.reverse()

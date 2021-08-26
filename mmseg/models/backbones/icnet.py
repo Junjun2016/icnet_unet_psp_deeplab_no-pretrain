@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from mmcv.cnn import BaseModule, ConvModule
+from mmcv.cnn import ConvModule
+from mmcv.runner import BaseModule
 
 from mmseg.ops import resize
 from ..builder import BACKBONES, build_backbone
@@ -30,6 +31,8 @@ class ICNet(BaseModule):
         conv_cfg (dict): Dictionary to construct and config conv layer.
         norm_cfg (dict): Dictionary to construct and config norm layer.
         act_cfg (dict): Dictionary to construct and config act layer.
+        align_corners (bool): align_corners argument of F.interpolate.
+            Default: False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
     """
 
@@ -43,13 +46,15 @@ class ICNet(BaseModule):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', requires_grad=True),
                  act_cfg=dict(type='ReLU'),
+                 align_corners=False,
                  init_cfg=[
                      dict(type='Kaiming', mode='fan_out', layer='Conv2d'),
                      dict(type='Constant', val=1, layer='_BatchNorm'),
-                     dict(type='NormalInit', mean=0.01, layer='Linear')
+                     dict(type='Normal', mean=0.01, layer='Linear')
                  ]):
 
         super(ICNet, self).__init__(init_cfg=init_cfg)
+        self.align_corners = align_corners
         self.backbone = build_backbone(resnet_cfg)
         self.backbone.maxpool = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=1, ceil_mode=True)
@@ -110,7 +115,11 @@ class ICNet(BaseModule):
         output.append(self.conv_sub1(x))
 
         # sub 2
-        x = resize(x, scale_factor=0.5, mode='bilinear', align_corners=True)
+        x = resize(
+            x,
+            scale_factor=0.5,
+            mode='bilinear',
+            align_corners=self.align_corners)
         x = self.backbone.stem(x)
         x = self.backbone.maxpool(x)
         x = self.backbone.layer1(x)
@@ -118,7 +127,11 @@ class ICNet(BaseModule):
         output.append(self.conv_sub2(x))
 
         # sub 4
-        x = resize(x, scale_factor=0.5, mode='bilinear', align_corners=True)
+        x = resize(
+            x,
+            scale_factor=0.5,
+            mode='bilinear',
+            align_corners=self.align_corners)
         x = self.backbone.layer3(x)
         x = self.backbone.layer4(x)
         psp_outs = self.psp_head.psp_modules(x) + [x]

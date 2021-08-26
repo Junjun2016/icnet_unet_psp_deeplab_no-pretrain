@@ -4,6 +4,7 @@ _base_ = [
 ]
 
 model = dict(
-    resnet_cfg=dict(
-        init_cfg=dict(
-            type='Pretrained', checkpoint='open-mmlab://resnet50_v1c')))
+    backbone=dict(
+        resnet_cfg=dict(
+            init_cfg=dict(
+                type='Pretrained', checkpoint='open-mmlab://resnet50_v1c'))))
