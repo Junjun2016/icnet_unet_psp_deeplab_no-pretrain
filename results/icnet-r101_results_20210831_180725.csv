@@ -1,0 +1,13 @@
+method, log time, mIoU last, mAcc last, last eval, mIoU best, mAcc best, best eval
+icnet_r101-d8-pretrained_512x1024_160k_cityscapes, 20210830_190422.log.json, 57.63, 66.82000000000001, 4, 67.12, 76.33, 3
+icnet_r101-d8-pretrained_512x1024_80k_cityscapes, 20210830_161549.log.json, 74.22, 82.62, 10, 74.22, 82.62, 10
+icnet_r101-d8-pretrained_768x768_160k_cityscapes, 20210830_191000.log.json, 70.19999999999999, 79.86, 6, 70.19999999999999, 79.86, 6
+icnet_r101-d8-pretrained_768x768_80k_cityscapes, 20210830_074407.log.json, 74.97, 82.96, 10, 74.97, 82.96, 10
+icnet_r101-d8-pretrained_832x832_160k_cityscapes, 20210831_011339.log.json, 72.03, 82.86, 7, 72.03, 82.86, 7
+icnet_r101-d8-pretrained_832x832_80k_cityscapes, 20210830_154026.log.json, 74.61, 82.75, 10, 74.61, 82.75, 10
+icnet_r101-d8_512x1024_160k_cityscapes, 20210830_201607.log.json, 61.7, 75.09, 7, 66.36, 75.82, 6
+icnet_r101-d8_512x1024_80k_cityscapes, 20210830_074520.log.json, 67.89, 77.73, 10, 67.89, 77.73, 10
+icnet_r101-d8_768x768_160k_cityscapes, 20210830_235923.log.json, 63.1, 74.02, 7, 65.4, 73.89, 6
+icnet_r101-d8_768x768_80k_cityscapes, 20210830_121405.log.json, 68.82000000000001, 77.71000000000001, 10, 68.82000000000001, 77.71000000000001, 10
+icnet_r101-d8_832x832_160k_cityscapes, 20210830_181857.log.json, 68.66, 78.59, 7, 68.66, 78.59, 7
+icnet_r101-d8_832x832_80k_cityscapes, 20210830_074414.log.json, 70.35, 79.02, 10, 70.35, 79.02, 10
