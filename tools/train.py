@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import copy
+import mmcv
 import os
 import os.path as osp
 import time
-
-import mmcv
 import torch
 from mmcv.runner import init_dist
 from mmcv.utils import Config, DictAction, get_git_hash
@@ -25,6 +24,8 @@ def parse_args():
         '--load-from', help='the checkpoint file to load weights from')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
+    parser.add_argument(
+        '--auto-resume', action='store_true', help='auto resume form latest')
     parser.add_argument(
         '--no-validate',
         action='store_true',
@@ -87,6 +88,10 @@ def main():
         cfg.gpu_ids = args.gpu_ids
     else:
         cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
+
+    if cfg.auto_resume is not None and cfg.resume_from is None:
+        if osp.exists(osp.join(cfg.work_dir, 'latest.pth')):
+            cfg.resume_from = osp.join(cfg.work_dir, 'latest.pth')
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
