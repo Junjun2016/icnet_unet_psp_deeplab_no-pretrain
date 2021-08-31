@@ -89,7 +89,7 @@ def main():
     else:
         cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
 
-    if cfg.auto_resume and cfg.resume_from is None:
+    if args.auto_resume and cfg.resume_from is None:
         if osp.exists(osp.join(cfg.work_dir, 'latest.pth')):
             cfg.resume_from = osp.join(cfg.work_dir, 'latest.pth')
 
