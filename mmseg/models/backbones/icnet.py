@@ -5,7 +5,7 @@ from mmcv.runner import BaseModule
 
 from mmseg.ops import resize
 from ..builder import BACKBONES, build_backbone
-from ..decode_heads.psp_head import PSPHead
+from ..decode_heads.psp_head import PPM
 
 
 @BACKBONES.register_module()
@@ -28,6 +28,8 @@ class ICNet(BaseModule):
             at each branches. Default: (64, 256, 256).
         resnet_cfg (dict): Config dict to build ResNet. It can also be other
             backbones. Default: None.
+        pool_scales (tuple[int]): Pooling scales used in Pooling Pyramid
+            Module. Default: (1, 2, 3, 6).
         conv_cfg (dict): Dictionary to construct and config conv layer.
         norm_cfg (dict): Dictionary to construct and config norm layer.
         act_cfg (dict): Dictionary to construct and config act layer.
@@ -43,6 +45,7 @@ class ICNet(BaseModule):
                  psp_out_channels=512,
                  out_channels=(64, 256, 256),
                  resnet_cfg=None,
+                 pool_scales=(1, 2, 3, 6),
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', requires_grad=True),
                  act_cfg=dict(type='ReLU'),
@@ -59,14 +62,36 @@ class ICNet(BaseModule):
         self.backbone.maxpool = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=1, ceil_mode=True)
 
-        self.psp_head = PSPHead(
+        # self.psp_head = PSPHead(
+        #     in_channels=layer_channels[1],
+        #     channels=psp_out_channels,
+        #     num_classes=1,
+        #     conv_cfg=conv_cfg,
+        #     norm_cfg=norm_cfg,
+        #     act_cfg=act_cfg)
+        # del self.psp_head.conv_seg
+
+        # RuntimeError: module did not have attribute conv_seg, but init_cfg
+        # is {'type': 'Normal', 'std': 0.01}.
+        # To avoid above error, we define psp_module and bottleneck seperatly.
+
+        self.psp_modules = PPM(
+            pool_scales=pool_scales,
             in_channels=layer_channels[1],
             channels=psp_out_channels,
-            num_classes=1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+            align_corners=align_corners)
+
+        self.psp_bottleneck = ConvModule(
+            layer_channels[1] + len(pool_scales) * psp_out_channels,
+            psp_out_channels,
+            3,
+            padding=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
-        del self.psp_head.conv_seg
 
         self.conv_sub1 = nn.Sequential(
             ConvModule(
@@ -134,9 +159,9 @@ class ICNet(BaseModule):
             align_corners=self.align_corners)
         x = self.backbone.layer3(x)
         x = self.backbone.layer4(x)
-        psp_outs = self.psp_head.psp_modules(x) + [x]
+        psp_outs = self.psp_modules(x) + [x]
         psp_outs = torch.cat(psp_outs, dim=1)
-        x = self.psp_head.bottleneck(psp_outs)
+        x = self.psp_bottleneck(psp_outs)
 
         output.append(self.conv_sub4(x))
 
