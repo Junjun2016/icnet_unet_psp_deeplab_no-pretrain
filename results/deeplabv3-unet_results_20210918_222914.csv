@@ -1,0 +1,7 @@
+method, log time, mIoU last, mAcc last, last eval, mIoU best, mAcc best, best eval
+deeplabv3_unet_s5-d16_512x1024_160k_cityscapes, 20210916_011553.log.json, 72.7, 80.30000000000001, 10, 72.7, 80.30000000000001, 10
+deeplabv3_unet_s5-d16_512x512_160k_cityscapes, 20210916_011553.log.json, 70.34, 78.31, 10, 70.34, 78.31, 10
+deeplabv3_unet_s5-d16_768x768_160k_cityscapes, 20210916_010806.log.json, 0, 0, 0, 0, 0, 0
+deeplabv3_unet_s5-d16_768x768_160k_cityscapes, 20210916_011553.log.json, 71.15, 78.93, 10, 71.15, 78.93, 10
+deeplabv3_unet_s5-d16_832x832_160k_cityscapes, 20210916_010806.log.json, 0, 0, 0, 0, 0, 0
+deeplabv3_unet_s5-d16_832x832_160k_cityscapes, 20210916_011553.log.json, 72.08, 79.74, 10, 72.08, 79.74, 10

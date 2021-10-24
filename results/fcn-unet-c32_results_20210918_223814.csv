@@ -1,0 +1,5 @@
+method, log time, mIoU last, mAcc last, last eval, mIoU best, mAcc best, best eval
+fcn_unet_s5-d16-c32_512x1024_160k_cityscapes, 20210916_012317.log.json, 67.58, 76.69, 10, 67.58, 76.69, 10
+fcn_unet_s5-d16-c32_512x512_160k_cityscapes, 20210916_012318.log.json, 65.47, 74.6, 10, 65.47, 74.6, 10
+fcn_unet_s5-d16-c32_768x768_160k_cityscapes, 20210916_012317.log.json, 66.4, 75.29, 10, 66.4, 75.29, 10
+fcn_unet_s5-d16-c32_832x832_160k_cityscapes, 20210916_012318.log.json, 66.47, 75.3, 10, 66.47, 75.3, 10

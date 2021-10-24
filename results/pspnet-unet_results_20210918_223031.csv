@@ -1,0 +1,9 @@
+method, log time, mIoU last, mAcc last, last eval, mIoU best, mAcc best, best eval
+pspnet_unet_s5-d16_512x1024_160k_cityscapes, 20210916_010806.log.json, 0, 0, 0, 0, 0, 0
+pspnet_unet_s5-d16_512x1024_160k_cityscapes, 20210916_011611.log.json, 50.83, 58.489999999999995, 3, 51.470000000000006, 58.29, 2
+pspnet_unet_s5-d16_512x512_160k_cityscapes, 20210916_010808.log.json, 0, 0, 0, 0, 0, 0
+pspnet_unet_s5-d16_512x512_160k_cityscapes, 20210916_011611.log.json, 45.7, 51.790000000000006, 7, 55.33, 61.160000000000004, 6
+pspnet_unet_s5-d16_768x768_160k_cityscapes, 20210916_010807.log.json, 0, 0, 0, 0, 0, 0
+pspnet_unet_s5-d16_768x768_160k_cityscapes, 20210916_011611.log.json, 46.9, 54.39000000000001, 2, 46.9, 54.39000000000001, 2
+pspnet_unet_s5-d16_832x832_160k_cityscapes, 20210916_010806.log.json, 0, 0, 0, 0, 0, 0
+pspnet_unet_s5-d16_832x832_160k_cityscapes, 20210916_011611.log.json, 50.18, 57.56, 2, 50.18, 57.56, 2

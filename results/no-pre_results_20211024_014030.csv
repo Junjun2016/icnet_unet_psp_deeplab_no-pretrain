@@ -1,0 +1,27 @@
+method, log time, mIoU last, mAcc last, last eval, mIoU best, mAcc best, best eval
+deeplabv3_r101-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 75.31, 84.53, 8, 75.31, 84.53, 8
+deeplabv3_r101-d8_no-pre_512x1024_160k_cityscapes, 20211019_235326.log.json, 0, 0, 0, 0, 0, 0
+deeplabv3_r101-d8_no-pre_512x1024_320k_cityscapes, 20211011_223441.log.json, 69.17, 79.08, 3, 69.17, 79.08, 3
+deeplabv3_r101-d8_no-pre_512x1024_320k_cityscapes, 20211020_181500.log.json, 80.35, 87.01, 7, 80.35, 87.01, 7
+deeplabv3_r50-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 71.21, 79.86999999999999, 6, 71.21, 79.86999999999999, 6
+deeplabv3_r50-d8_no-pre_512x1024_160k_cityscapes, 20211021_004418.log.json, 78.66, 85.66, 10, 78.66, 85.66, 10
+deeplabv3_r50-d8_no-pre_512x1024_320k_cityscapes, 20211012_114500.log.json, 72.77, 80.84, 4, 72.77, 80.84, 4
+deeplabv3_r50-d8_no-pre_512x1024_320k_cityscapes, 20211020_180900.log.json, 79.57, 86.22999999999999, 6, 79.57, 86.22999999999999, 6
+deeplabv3_r50b-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 74.0, 82.85, 8, 74.0, 82.85, 8
+deeplabv3_r50b-d8_no-pre_512x1024_160k_cityscapes, 20211019_235326.log.json, 0, 0, 0, 0, 0, 0
+deeplabv3_r50b-d8_no-pre_512x1024_320k_cityscapes, 20211011_223441.log.json, 53.43, 63.7, 1, 53.43, 63.7, 1
+deeplabv3_r50b-d8_no-pre_512x1024_320k_cityscapes, 20211021_061106.log.json, 74.39, 82.64, 8, 76.86, 84.61999999999999, 7
+deeplabv3plus_r101-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 74.02, 84.41, 7, 74.02, 84.41, 7
+deeplabv3plus_r101-d8_no-pre_512x1024_160k_cityscapes, 20211021_004429.log.json, 80.35, 87.37, 10, 80.35, 87.37, 10
+deeplabv3plus_r101-d8_no-pre_512x1024_320k_cityscapes, 20211013_061551.log.json, 81.08999999999999, 87.53, 10, 81.08999999999999, 87.53, 10
+deeplabv3plus_r50-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 78.46, 86.77, 9, 78.46, 86.77, 9
+deeplabv3plus_r50-d8_no-pre_512x1024_160k_cityscapes, 20211019_235327.log.json, 0, 0, 0, 0, 0, 0
+deeplabv3plus_r50-d8_no-pre_512x1024_160k_cityscapes, 20211021_151955.log.json, 79.16, 85.96000000000001, 10, 79.16, 85.96000000000001, 10
+deeplabv3plus_r50-d8_no-pre_512x1024_320k_cityscapes, 20211012_114519.log.json, 72.27, 81.3, 3, 72.27, 81.3, 3
+deeplabv3plus_r50-d8_no-pre_512x1024_320k_cityscapes, 20211020_093700.log.json, 80.21000000000001, 86.7, 7, 80.21000000000001, 86.7, 7
+pspnet_r101-d8_no-pre_512x1024_160k_cityscapes, 20210928_224444.log.json, 77.52, 85.42999999999999, 9, 77.52, 85.42999999999999, 9
+pspnet_r101-d8_no-pre_512x1024_160k_cityscapes, 20211019_235331.log.json, 0, 0, 0, 0, 0, 0
+pspnet_r101-d8_no-pre_512x1024_160k_cityscapes, 20211021_151954.log.json, 78.71000000000001, 85.61, 10, 78.71000000000001, 85.61, 10
+pspnet_r50-d8_no-pre_512x1024_160k_cityscapes, 20210929_005209.log.json, 68.28999999999999, 76.06, 6, 68.28999999999999, 76.06, 6
+pspnet_r50-d8_no-pre_512x1024_160k_cityscapes, 20211021_151955.log.json, 77.77, 84.64, 10, 77.77, 84.64, 10
+pspnet_r50-d8_no-pre_512x1024_320k_cityscapes, 20211013_123631.log.json, 77.72, 84.17, 10, 77.72, 84.17, 10

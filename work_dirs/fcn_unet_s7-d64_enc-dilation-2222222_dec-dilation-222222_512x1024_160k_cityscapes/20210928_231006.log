@@ -1,0 +1,813 @@
+2021-09-28 23:10:06,750 - mmseg - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.10 (default, Jun  4 2021, 15:09:15) [GCC 7.5.0]
+CUDA available: True
+GPU 0: Tesla V100-SXM2-32GB
+CUDA_HOME: /mnt/cache/share/polaris/dep/cuda-9.0-cudnn7.6.5
+GCC: gcc (GCC) 5.4.0
+PyTorch: 1.8.0
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.2-Product Build 20210312 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 10.2
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 7.6.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=10.2, CUDNN_VERSION=7.6.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.9.0
+OpenCV: 4.5.3
+MMCV: 1.3.8
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 10.2
+MMSegmentation: 0.16.0+298142e
+------------------------------------------------------------
+
+2021-09-28 23:10:06,751 - mmseg - INFO - Distributed training: True
+2021-09-28 23:10:07,044 - mmseg - INFO - Config:
+norm_cfg = dict(type='SyncBN', requires_grad=True)
+model = dict(
+    type='EncoderDecoder',
+    pretrained=None,
+    backbone=dict(
+        type='UNet',
+        in_channels=3,
+        base_channels=64,
+        num_stages=7,
+        strides=(1, 1, 1, 1, 1, 1, 1),
+        enc_num_convs=(2, 2, 2, 2, 2, 2, 2),
+        dec_num_convs=(2, 2, 2, 2, 2, 2),
+        downsamples=(True, True, True, True, True, True),
+        enc_dilations=(2, 2, 2, 2, 2, 2, 2),
+        dec_dilations=(2, 2, 2, 2, 2, 2),
+        with_cp=False,
+        conv_cfg=None,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        act_cfg=dict(type='ReLU'),
+        upsample_cfg=dict(type='InterpConv'),
+        norm_eval=False),
+    decode_head=dict(
+        type='FCNHead',
+        in_channels=64,
+        in_index=6,
+        channels=64,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=0.1,
+        num_classes=19,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        align_corners=False,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+    auxiliary_head=dict(
+        type='FCNHead',
+        in_channels=128,
+        in_index=5,
+        channels=64,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=0.1,
+        num_classes=19,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        align_corners=False,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
+dataset_type = 'CityscapesDataset'
+data_root = 'data/cityscapes/'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+crop_size = (512, 1024)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(type='Resize', img_scale=(2048, 1024), ratio_range=(0.5, 2.0)),
+    dict(type='RandomCrop', crop_size=(512, 1024), cat_max_ratio=0.75),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PhotoMetricDistortion'),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size=(512, 1024), pad_val=0, seg_pad_val=255),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(2048, 1024),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='CityscapesDataset',
+        data_root='data/cityscapes/',
+        img_dir='leftImg8bit/train',
+        ann_dir='gtFine/train',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations'),
+            dict(
+                type='Resize', img_scale=(2048, 1024), ratio_range=(0.5, 2.0)),
+            dict(type='RandomCrop', crop_size=(512, 1024), cat_max_ratio=0.75),
+            dict(type='RandomFlip', prob=0.5),
+            dict(type='PhotoMetricDistortion'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size=(512, 1024), pad_val=0, seg_pad_val=255),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+        ]),
+    val=dict(
+        type='CityscapesDataset',
+        data_root='data/cityscapes/',
+        img_dir='leftImg8bit/val',
+        ann_dir='gtFine/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2048, 1024),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='CityscapesDataset',
+        data_root='data/cityscapes/',
+        img_dir='leftImg8bit/val',
+        ann_dir='gtFine/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2048, 1024),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+log_config = dict(
+    interval=50, hooks=[dict(type='TextLoggerHook', by_epoch=False)])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = None
+resume_from = None
+workflow = [('train', 1)]
+cudnn_benchmark = True
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
+optimizer_config = dict()
+lr_config = dict(policy='poly', power=0.9, min_lr=0.0001, by_epoch=False)
+runner = dict(type='IterBasedRunner', max_iters=160000)
+checkpoint_config = dict(by_epoch=False, interval=16000)
+evaluation = dict(interval=16000, metric='mIoU', pre_eval=True)
+work_dir = './work_dirs/fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes'
+gpu_ids = range(0, 1)
+
+2021-09-28 23:10:07,044 - mmseg - INFO - Set random seed to 0, deterministic: False
+2021-09-28 23:10:19,596 - mmseg - INFO - EncoderDecoder(
+  (backbone): UNet(
+    (encoder): ModuleList(
+      (0): Sequential(
+        (0): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (1): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (2): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (3): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (4): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(512, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(1024, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (5): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(1024, 2048, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(2048, 2048, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (6): Sequential(
+        (0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (1): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(2048, 4096, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(4096, 4096, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+    )
+    (decoder): ModuleList(
+      (0): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(128, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (1): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(256, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (2): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(512, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (3): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(1024, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(1024, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (4): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(2048, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(1024, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(2048, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+      (5): UpConvBlock(
+        (conv_block): BasicConvBlock(
+          (convs): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(4096, 2048, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn): SyncBatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(2048, 2048, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), bias=False)
+              (bn): SyncBatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+        (upsample): InterpConv(
+          (interp_upsample): Sequential(
+            (0): Upsample()
+            (1): ConvModule(
+              (conv): Conv2d(4096, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): SyncBatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+        )
+      )
+    )
+  )
+  init_cfg=[{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+  (decode_head): FCNHead(
+    input_transform=None, ignore_index=255, align_corners=False
+    (loss_decode): CrossEntropyLoss()
+    (conv_seg): Conv2d(64, 19, kernel_size=(1, 1), stride=(1, 1))
+    (dropout): Dropout2d(p=0.1, inplace=False)
+    (convs): Sequential(
+      (0): ConvModule(
+        (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (activate): ReLU(inplace=True)
+      )
+    )
+  )
+  init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+  (auxiliary_head): FCNHead(
+    input_transform=None, ignore_index=255, align_corners=False
+    (loss_decode): CrossEntropyLoss()
+    (conv_seg): Conv2d(64, 19, kernel_size=(1, 1), stride=(1, 1))
+    (dropout): Dropout2d(p=0.1, inplace=False)
+    (convs): Sequential(
+      (0): ConvModule(
+        (conv): Conv2d(128, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (activate): ReLU(inplace=True)
+      )
+    )
+  )
+  init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+)
+2021-09-28 23:10:19,743 - mmseg - INFO - Loaded 2975 images
+2021-09-28 23:10:28,987 - mmseg - INFO - Loaded 500 images
+2021-09-28 23:10:28,998 - mmseg - INFO - Start running, host: hejunjun@SH-IDC1-10-198-4-110, work_dir: /mnt/lustre/hejunjun/open-mmlab/icnet/work_dirs/fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes
+2021-09-28 23:10:28,998 - mmseg - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(NORMAL      ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(NORMAL      ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2021-09-28 23:10:28,999 - mmseg - INFO - workflow: [('train', 1)], max: 160000 iters
+2021-09-28 23:13:23,816 - mmseg - INFO - Iter [50/160000]	lr: 9.997e-03, eta: 2 days, 0:18:00, time: 1.087, data_time: 0.162, memory: 20861, decode.loss_seg: 2.0265, decode.acc_seg: 35.1456, aux.loss_seg: 0.8998, aux.acc_seg: 29.7478, loss: 2.9263
+2021-09-28 23:14:07,498 - mmseg - INFO - Iter [100/160000]	lr: 9.994e-03, eta: 1 day, 19:30:45, time: 0.872, data_time: 0.089, memory: 20861, decode.loss_seg: 1.6502, decode.acc_seg: 41.7941, aux.loss_seg: 0.6947, aux.acc_seg: 41.6323, loss: 2.3449
+2021-09-28 23:14:57,614 - mmseg - INFO - Iter [150/160000]	lr: 9.992e-03, eta: 1 day, 19:50:23, time: 1.003, data_time: 0.080, memory: 20861, decode.loss_seg: 1.5239, decode.acc_seg: 46.6439, aux.loss_seg: 0.6148, aux.acc_seg: 46.5711, loss: 2.1388
+2021-09-28 23:15:58,241 - mmseg - INFO - Iter [200/160000]	lr: 9.989e-03, eta: 1 day, 22:19:06, time: 1.212, data_time: 0.231, memory: 20861, decode.loss_seg: 1.6045, decode.acc_seg: 45.6164, aux.loss_seg: 0.6418, aux.acc_seg: 47.0573, loss: 2.2463
+2021-09-28 23:16:32,882 - mmseg - INFO - Iter [250/160000]	lr: 9.986e-03, eta: 1 day, 19:12:11, time: 0.694, data_time: 0.032, memory: 20861, decode.loss_seg: 1.5661, decode.acc_seg: 48.3259, aux.loss_seg: 0.6133, aux.acc_seg: 49.7717, loss: 2.1794
+2021-09-28 23:17:19,038 - mmseg - INFO - Iter [300/160000]	lr: 9.983e-03, eta: 1 day, 18:48:52, time: 0.923, data_time: 0.196, memory: 20861, decode.loss_seg: 1.4275, decode.acc_seg: 52.0532, aux.loss_seg: 0.5662, aux.acc_seg: 52.6201, loss: 1.9937
+2021-09-28 23:17:54,845 - mmseg - INFO - Iter [350/160000]	lr: 9.981e-03, eta: 1 day, 17:13:41, time: 0.717, data_time: 0.021, memory: 20861, decode.loss_seg: 1.4934, decode.acc_seg: 50.0047, aux.loss_seg: 0.5936, aux.acc_seg: 50.5314, loss: 2.0870
+2021-09-28 23:18:36,002 - mmseg - INFO - Iter [400/160000]	lr: 9.978e-03, eta: 1 day, 16:37:28, time: 0.823, data_time: 0.088, memory: 20861, decode.loss_seg: 1.3232, decode.acc_seg: 54.0175, aux.loss_seg: 0.5331, aux.acc_seg: 54.1511, loss: 1.8564
+2021-09-28 23:19:24,249 - mmseg - INFO - Iter [450/160000]	lr: 9.975e-03, eta: 1 day, 16:50:46, time: 0.964, data_time: 0.146, memory: 20861, decode.loss_seg: 1.3394, decode.acc_seg: 53.7163, aux.loss_seg: 0.5302, aux.acc_seg: 54.5081, loss: 1.8696
+2021-09-28 23:20:05,144 - mmseg - INFO - Iter [500/160000]	lr: 9.972e-03, eta: 1 day, 16:22:31, time: 0.818, data_time: 0.041, memory: 20861, decode.loss_seg: 1.3864, decode.acc_seg: 53.3939, aux.loss_seg: 0.5430, aux.acc_seg: 54.6140, loss: 1.9295
+2021-09-28 23:20:44,905 - mmseg - INFO - Iter [550/160000]	lr: 9.969e-03, eta: 1 day, 15:53:52, time: 0.796, data_time: 0.059, memory: 20861, decode.loss_seg: 1.3316, decode.acc_seg: 54.7004, aux.loss_seg: 0.5204, aux.acc_seg: 55.5138, loss: 1.8520
+2021-09-28 23:21:25,097 - mmseg - INFO - Iter [600/160000]	lr: 9.967e-03, eta: 1 day, 15:31:27, time: 0.803, data_time: 0.170, memory: 20861, decode.loss_seg: 1.3397, decode.acc_seg: 53.4104, aux.loss_seg: 0.5338, aux.acc_seg: 53.9176, loss: 1.8735
+2021-09-28 23:22:09,161 - mmseg - INFO - Iter [650/160000]	lr: 9.964e-03, eta: 1 day, 15:28:35, time: 0.882, data_time: 0.123, memory: 20861, decode.loss_seg: 1.3182, decode.acc_seg: 53.3693, aux.loss_seg: 0.5249, aux.acc_seg: 53.7016, loss: 1.8431
+2021-09-28 23:22:57,411 - mmseg - INFO - Iter [700/160000]	lr: 9.961e-03, eta: 1 day, 15:41:42, time: 0.965, data_time: 0.142, memory: 20861, decode.loss_seg: 1.2896, decode.acc_seg: 54.7596, aux.loss_seg: 0.5132, aux.acc_seg: 55.6506, loss: 1.8028
+2021-09-28 23:23:41,226 - mmseg - INFO - Iter [750/160000]	lr: 9.958e-03, eta: 1 day, 15:37:55, time: 0.880, data_time: 0.074, memory: 20861, decode.loss_seg: 1.3454, decode.acc_seg: 53.7464, aux.loss_seg: 0.5397, aux.acc_seg: 53.9872, loss: 1.8851
+2021-09-28 23:24:27,143 - mmseg - INFO - Iter [800/160000]	lr: 9.955e-03, eta: 1 day, 15:36:38, time: 0.893, data_time: 0.057, memory: 20861, decode.loss_seg: 1.3632, decode.acc_seg: 54.6136, aux.loss_seg: 0.5396, aux.acc_seg: 55.1353, loss: 1.9029
+2021-09-28 23:25:14,695 - mmseg - INFO - Iter [850/160000]	lr: 9.953e-03, eta: 1 day, 15:47:46, time: 0.972, data_time: 0.101, memory: 20861, decode.loss_seg: 1.3360, decode.acc_seg: 55.8279, aux.loss_seg: 0.5259, aux.acc_seg: 56.9361, loss: 1.8619
+2021-09-28 23:26:04,546 - mmseg - INFO - Iter [900/160000]	lr: 9.950e-03, eta: 1 day, 16:01:19, time: 0.997, data_time: 0.123, memory: 20861, decode.loss_seg: 1.3244, decode.acc_seg: 55.6920, aux.loss_seg: 0.5281, aux.acc_seg: 56.2390, loss: 1.8525
+2021-09-28 23:26:53,200 - mmseg - INFO - Iter [950/160000]	lr: 9.947e-03, eta: 1 day, 16:09:48, time: 0.972, data_time: 0.099, memory: 20861, decode.loss_seg: 1.2827, decode.acc_seg: 57.3921, aux.loss_seg: 0.5043, aux.acc_seg: 58.0881, loss: 1.7870
+2021-09-28 23:27:42,523 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-28 23:27:42,610 - mmseg - INFO - Iter [1000/160000]	lr: 9.944e-03, eta: 1 day, 16:19:34, time: 0.988, data_time: 0.136, memory: 20861, decode.loss_seg: 1.1747, decode.acc_seg: 60.3877, aux.loss_seg: 0.4673, aux.acc_seg: 61.2467, loss: 1.6421
+2021-09-28 23:28:33,271 - mmseg - INFO - Iter [1050/160000]	lr: 9.942e-03, eta: 1 day, 16:31:27, time: 1.013, data_time: 0.151, memory: 20861, decode.loss_seg: 1.1860, decode.acc_seg: 57.5906, aux.loss_seg: 0.4683, aux.acc_seg: 58.8935, loss: 1.6543
+2021-09-28 23:29:33,234 - mmseg - INFO - Iter [1100/160000]	lr: 9.939e-03, eta: 1 day, 17:04:55, time: 1.202, data_time: 0.198, memory: 20861, decode.loss_seg: 1.0936, decode.acc_seg: 61.3270, aux.loss_seg: 0.4325, aux.acc_seg: 61.9534, loss: 1.5261
+2021-09-28 23:30:18,995 - mmseg - INFO - Iter [1150/160000]	lr: 9.936e-03, eta: 1 day, 17:02:14, time: 0.914, data_time: 0.042, memory: 20861, decode.loss_seg: 1.1706, decode.acc_seg: 58.9347, aux.loss_seg: 0.4660, aux.acc_seg: 59.4493, loss: 1.6366
+2021-09-28 23:31:07,074 - mmseg - INFO - Iter [1200/160000]	lr: 9.933e-03, eta: 1 day, 17:05:07, time: 0.963, data_time: 0.164, memory: 20861, decode.loss_seg: 1.1876, decode.acc_seg: 55.9920, aux.loss_seg: 0.4627, aux.acc_seg: 57.8315, loss: 1.6503
+2021-09-28 23:31:54,019 - mmseg - INFO - Iter [1250/160000]	lr: 9.930e-03, eta: 1 day, 17:04:46, time: 0.935, data_time: 0.071, memory: 20861, decode.loss_seg: 1.1565, decode.acc_seg: 60.0152, aux.loss_seg: 0.4607, aux.acc_seg: 60.4736, loss: 1.6172
+2021-09-28 23:32:41,116 - mmseg - INFO - Iter [1300/160000]	lr: 9.928e-03, eta: 1 day, 17:05:12, time: 0.943, data_time: 0.099, memory: 20861, decode.loss_seg: 1.1410, decode.acc_seg: 59.1792, aux.loss_seg: 0.4528, aux.acc_seg: 59.5072, loss: 1.5938
+2021-09-28 23:33:28,209 - mmseg - INFO - Iter [1350/160000]	lr: 9.925e-03, eta: 1 day, 17:05:25, time: 0.942, data_time: 0.104, memory: 20861, decode.loss_seg: 1.1760, decode.acc_seg: 58.9110, aux.loss_seg: 0.4625, aux.acc_seg: 59.6149, loss: 1.6385
+2021-09-28 23:34:09,421 - mmseg - INFO - Iter [1400/160000]	lr: 9.922e-03, eta: 1 day, 16:53:32, time: 0.815, data_time: 0.082, memory: 20861, decode.loss_seg: 1.2718, decode.acc_seg: 55.2696, aux.loss_seg: 0.5061, aux.acc_seg: 55.7707, loss: 1.7779
+2021-09-28 23:34:56,760 - mmseg - INFO - Iter [1450/160000]	lr: 9.919e-03, eta: 1 day, 16:55:11, time: 0.955, data_time: 0.107, memory: 20861, decode.loss_seg: 1.1567, decode.acc_seg: 60.1193, aux.loss_seg: 0.4480, aux.acc_seg: 61.9670, loss: 1.6047
+2021-09-28 23:35:38,170 - mmseg - INFO - Iter [1500/160000]	lr: 9.916e-03, eta: 1 day, 16:45:37, time: 0.829, data_time: 0.068, memory: 20861, decode.loss_seg: 1.1106, decode.acc_seg: 60.3609, aux.loss_seg: 0.4410, aux.acc_seg: 61.1179, loss: 1.5516
+2021-09-28 23:36:31,457 - mmseg - INFO - Iter [1550/160000]	lr: 9.914e-03, eta: 1 day, 16:56:48, time: 1.066, data_time: 0.163, memory: 20861, decode.loss_seg: 1.0555, decode.acc_seg: 60.4705, aux.loss_seg: 0.4134, aux.acc_seg: 61.7457, loss: 1.4689
+2021-09-28 23:37:23,547 - mmseg - INFO - Iter [1600/160000]	lr: 9.911e-03, eta: 1 day, 17:04:58, time: 1.039, data_time: 0.159, memory: 20861, decode.loss_seg: 1.1496, decode.acc_seg: 60.2092, aux.loss_seg: 0.4587, aux.acc_seg: 60.8698, loss: 1.6082
+2021-09-28 23:38:08,825 - mmseg - INFO - Iter [1650/160000]	lr: 9.908e-03, eta: 1 day, 17:02:10, time: 0.909, data_time: 0.083, memory: 20861, decode.loss_seg: 1.1131, decode.acc_seg: 64.0001, aux.loss_seg: 0.4448, aux.acc_seg: 63.7245, loss: 1.5579
+2021-09-28 23:39:00,456 - mmseg - INFO - Iter [1700/160000]	lr: 9.905e-03, eta: 1 day, 17:09:02, time: 1.031, data_time: 0.146, memory: 20861, decode.loss_seg: 1.0779, decode.acc_seg: 60.4161, aux.loss_seg: 0.4250, aux.acc_seg: 60.6297, loss: 1.5030
+2021-09-28 23:39:57,719 - mmseg - INFO - Iter [1750/160000]	lr: 9.903e-03, eta: 1 day, 17:22:49, time: 1.129, data_time: 0.088, memory: 20861, decode.loss_seg: 1.0657, decode.acc_seg: 60.8138, aux.loss_seg: 0.4152, aux.acc_seg: 61.7405, loss: 1.4809
+2021-09-28 23:40:54,672 - mmseg - INFO - Iter [1800/160000]	lr: 9.900e-03, eta: 1 day, 17:37:44, time: 1.156, data_time: 0.101, memory: 20861, decode.loss_seg: 1.1482, decode.acc_seg: 60.6183, aux.loss_seg: 0.4507, aux.acc_seg: 61.7128, loss: 1.5988
+2021-09-28 23:41:44,835 - mmseg - INFO - Iter [1850/160000]	lr: 9.897e-03, eta: 1 day, 17:40:55, time: 1.003, data_time: 0.141, memory: 20861, decode.loss_seg: 1.1171, decode.acc_seg: 62.0860, aux.loss_seg: 0.4446, aux.acc_seg: 63.0096, loss: 1.5617
+2021-09-28 23:42:33,930 - mmseg - INFO - Iter [1900/160000]	lr: 9.894e-03, eta: 1 day, 17:42:25, time: 0.982, data_time: 0.165, memory: 20861, decode.loss_seg: 1.0894, decode.acc_seg: 60.5835, aux.loss_seg: 0.4292, aux.acc_seg: 61.5943, loss: 1.5185
+2021-09-28 23:43:19,151 - mmseg - INFO - Iter [1950/160000]	lr: 9.891e-03, eta: 1 day, 17:38:34, time: 0.904, data_time: 0.121, memory: 20861, decode.loss_seg: 1.1252, decode.acc_seg: 62.3050, aux.loss_seg: 0.4369, aux.acc_seg: 63.2551, loss: 1.5621
+2021-09-28 23:44:20,683 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-28 23:44:20,905 - mmseg - INFO - Iter [2000/160000]	lr: 9.889e-03, eta: 1 day, 17:56:21, time: 1.231, data_time: 0.275, memory: 20861, decode.loss_seg: 1.0677, decode.acc_seg: 63.4659, aux.loss_seg: 0.4192, aux.acc_seg: 64.1515, loss: 1.4868
+2021-09-28 23:45:05,163 - mmseg - INFO - Iter [2050/160000]	lr: 9.886e-03, eta: 1 day, 17:51:19, time: 0.890, data_time: 0.021, memory: 20861, decode.loss_seg: 1.0829, decode.acc_seg: 62.2396, aux.loss_seg: 0.4337, aux.acc_seg: 62.7112, loss: 1.5166
+2021-09-28 23:45:59,240 - mmseg - INFO - Iter [2100/160000]	lr: 9.883e-03, eta: 1 day, 17:58:31, time: 1.082, data_time: 0.178, memory: 20861, decode.loss_seg: 1.0463, decode.acc_seg: 62.2787, aux.loss_seg: 0.4131, aux.acc_seg: 62.4724, loss: 1.4594
+2021-09-28 23:46:52,802 - mmseg - INFO - Iter [2150/160000]	lr: 9.880e-03, eta: 1 day, 18:04:33, time: 1.068, data_time: 0.152, memory: 20861, decode.loss_seg: 1.1340, decode.acc_seg: 60.5584, aux.loss_seg: 0.4490, aux.acc_seg: 61.3887, loss: 1.5830
+2021-09-28 23:47:43,678 - mmseg - INFO - Iter [2200/160000]	lr: 9.877e-03, eta: 1 day, 18:07:15, time: 1.018, data_time: 0.094, memory: 20861, decode.loss_seg: 1.1470, decode.acc_seg: 60.5759, aux.loss_seg: 0.4546, aux.acc_seg: 61.0442, loss: 1.6015
+2021-09-28 23:48:28,010 - mmseg - INFO - Iter [2250/160000]	lr: 9.875e-03, eta: 1 day, 18:02:12, time: 0.888, data_time: 0.079, memory: 20861, decode.loss_seg: 1.1687, decode.acc_seg: 57.9482, aux.loss_seg: 0.4551, aux.acc_seg: 59.3631, loss: 1.6239
+2021-09-28 23:49:39,037 - mmseg - INFO - Iter [2300/160000]	lr: 9.872e-03, eta: 1 day, 18:27:50, time: 1.422, data_time: 0.442, memory: 20861, decode.loss_seg: 0.9937, decode.acc_seg: 63.4303, aux.loss_seg: 0.3884, aux.acc_seg: 64.2280, loss: 1.3821
+2021-09-28 23:50:27,025 - mmseg - INFO - Iter [2350/160000]	lr: 9.869e-03, eta: 1 day, 18:26:22, time: 0.958, data_time: 0.086, memory: 20861, decode.loss_seg: 1.0731, decode.acc_seg: 61.2454, aux.loss_seg: 0.4220, aux.acc_seg: 61.7759, loss: 1.4951
+2021-09-28 23:51:13,770 - mmseg - INFO - Iter [2400/160000]	lr: 9.866e-03, eta: 1 day, 18:23:40, time: 0.935, data_time: 0.158, memory: 20861, decode.loss_seg: 1.0538, decode.acc_seg: 62.5034, aux.loss_seg: 0.4077, aux.acc_seg: 63.7905, loss: 1.4615
+2021-09-28 23:51:55,941 - mmseg - INFO - Iter [2450/160000]	lr: 9.864e-03, eta: 1 day, 18:16:14, time: 0.845, data_time: 0.101, memory: 20861, decode.loss_seg: 0.9985, decode.acc_seg: 64.5002, aux.loss_seg: 0.3912, aux.acc_seg: 65.1369, loss: 1.3896
+2021-09-28 23:52:47,592 - mmseg - INFO - Iter [2500/160000]	lr: 9.861e-03, eta: 1 day, 18:18:58, time: 1.033, data_time: 0.270, memory: 20861, decode.loss_seg: 1.1148, decode.acc_seg: 59.4258, aux.loss_seg: 0.4355, aux.acc_seg: 60.7663, loss: 1.5503
+2021-09-28 23:53:31,447 - mmseg - INFO - Iter [2550/160000]	lr: 9.858e-03, eta: 1 day, 18:13:30, time: 0.877, data_time: 0.022, memory: 20861, decode.loss_seg: 0.9712, decode.acc_seg: 64.0600, aux.loss_seg: 0.3822, aux.acc_seg: 64.4392, loss: 1.3534
+2021-09-28 23:54:24,665 - mmseg - INFO - Iter [2600/160000]	lr: 9.855e-03, eta: 1 day, 18:17:35, time: 1.062, data_time: 0.162, memory: 20861, decode.loss_seg: 1.0003, decode.acc_seg: 64.0061, aux.loss_seg: 0.3925, aux.acc_seg: 64.3096, loss: 1.3928
+2021-09-28 23:55:13,807 - mmseg - INFO - Iter [2650/160000]	lr: 9.852e-03, eta: 1 day, 18:17:34, time: 0.983, data_time: 0.174, memory: 20861, decode.loss_seg: 1.0221, decode.acc_seg: 63.7802, aux.loss_seg: 0.4035, aux.acc_seg: 64.0280, loss: 1.4256
+2021-09-28 23:56:05,887 - mmseg - INFO - Iter [2700/160000]	lr: 9.850e-03, eta: 1 day, 18:20:26, time: 1.043, data_time: 0.105, memory: 20861, decode.loss_seg: 1.0591, decode.acc_seg: 63.7791, aux.loss_seg: 0.4120, aux.acc_seg: 64.6009, loss: 1.4711
+2021-09-28 23:56:55,980 - mmseg - INFO - Iter [2750/160000]	lr: 9.847e-03, eta: 1 day, 18:21:08, time: 1.001, data_time: 0.142, memory: 20861, decode.loss_seg: 1.0350, decode.acc_seg: 61.2924, aux.loss_seg: 0.4084, aux.acc_seg: 61.7808, loss: 1.4433
+2021-09-28 23:57:42,107 - mmseg - INFO - Iter [2800/160000]	lr: 9.844e-03, eta: 1 day, 18:18:10, time: 0.923, data_time: 0.019, memory: 20861, decode.loss_seg: 0.9448, decode.acc_seg: 65.6307, aux.loss_seg: 0.3733, aux.acc_seg: 66.0242, loss: 1.3182
+2021-09-28 23:58:33,205 - mmseg - INFO - Iter [2850/160000]	lr: 9.841e-03, eta: 1 day, 18:19:49, time: 1.022, data_time: 0.183, memory: 20861, decode.loss_seg: 0.9947, decode.acc_seg: 63.5580, aux.loss_seg: 0.3891, aux.acc_seg: 64.6534, loss: 1.3839
+2021-09-28 23:59:20,762 - mmseg - INFO - Iter [2900/160000]	lr: 9.838e-03, eta: 1 day, 18:18:10, time: 0.951, data_time: 0.074, memory: 20861, decode.loss_seg: 1.0277, decode.acc_seg: 63.1609, aux.loss_seg: 0.4093, aux.acc_seg: 63.7696, loss: 1.4370
+2021-09-29 00:00:12,011 - mmseg - INFO - Iter [2950/160000]	lr: 9.836e-03, eta: 1 day, 18:19:47, time: 1.024, data_time: 0.135, memory: 20861, decode.loss_seg: 1.0093, decode.acc_seg: 62.9012, aux.loss_seg: 0.3972, aux.acc_seg: 63.4914, loss: 1.4065
+2021-09-29 00:01:02,226 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 00:01:02,341 - mmseg - INFO - Iter [3000/160000]	lr: 9.833e-03, eta: 1 day, 18:20:28, time: 1.005, data_time: 0.170, memory: 20861, decode.loss_seg: 1.1057, decode.acc_seg: 63.0994, aux.loss_seg: 0.4402, aux.acc_seg: 63.6065, loss: 1.5459
+2021-09-29 00:01:45,814 - mmseg - INFO - Iter [3050/160000]	lr: 9.830e-03, eta: 1 day, 18:15:25, time: 0.872, data_time: 0.058, memory: 20861, decode.loss_seg: 1.0282, decode.acc_seg: 63.1764, aux.loss_seg: 0.4036, aux.acc_seg: 63.9551, loss: 1.4317
+2021-09-29 00:02:31,890 - mmseg - INFO - Iter [3100/160000]	lr: 9.827e-03, eta: 1 day, 18:12:48, time: 0.926, data_time: 0.077, memory: 20861, decode.loss_seg: 1.0668, decode.acc_seg: 64.4545, aux.loss_seg: 0.4191, aux.acc_seg: 65.2399, loss: 1.4858
+2021-09-29 00:03:24,457 - mmseg - INFO - Iter [3150/160000]	lr: 9.824e-03, eta: 1 day, 18:15:11, time: 1.045, data_time: 0.167, memory: 20861, decode.loss_seg: 0.8576, decode.acc_seg: 69.1396, aux.loss_seg: 0.3370, aux.acc_seg: 70.0101, loss: 1.1946
+2021-09-29 00:04:16,173 - mmseg - INFO - Iter [3200/160000]	lr: 9.822e-03, eta: 1 day, 18:17:00, time: 1.034, data_time: 0.125, memory: 20861, decode.loss_seg: 0.9522, decode.acc_seg: 66.3989, aux.loss_seg: 0.3791, aux.acc_seg: 66.3958, loss: 1.3313
+2021-09-29 00:04:57,783 - mmseg - INFO - Iter [3250/160000]	lr: 9.819e-03, eta: 1 day, 18:10:40, time: 0.833, data_time: 0.096, memory: 20861, decode.loss_seg: 0.9025, decode.acc_seg: 67.8119, aux.loss_seg: 0.3608, aux.acc_seg: 67.9887, loss: 1.2632
+2021-09-29 00:05:44,526 - mmseg - INFO - Iter [3300/160000]	lr: 9.816e-03, eta: 1 day, 18:08:31, time: 0.935, data_time: 0.106, memory: 20861, decode.loss_seg: 0.9601, decode.acc_seg: 67.5899, aux.loss_seg: 0.3789, aux.acc_seg: 68.0099, loss: 1.3390
+2021-09-29 00:06:30,255 - mmseg - INFO - Iter [3350/160000]	lr: 9.813e-03, eta: 1 day, 18:05:38, time: 0.915, data_time: 0.064, memory: 20861, decode.loss_seg: 0.9207, decode.acc_seg: 66.9450, aux.loss_seg: 0.3600, aux.acc_seg: 68.1019, loss: 1.2807
+2021-09-29 00:07:20,937 - mmseg - INFO - Iter [3400/160000]	lr: 9.811e-03, eta: 1 day, 18:06:32, time: 1.012, data_time: 0.186, memory: 20861, decode.loss_seg: 0.9956, decode.acc_seg: 64.6515, aux.loss_seg: 0.3944, aux.acc_seg: 65.1807, loss: 1.3900
+2021-09-29 00:08:19,668 - mmseg - INFO - Iter [3450/160000]	lr: 9.808e-03, eta: 1 day, 18:13:33, time: 1.175, data_time: 0.230, memory: 20861, decode.loss_seg: 0.9567, decode.acc_seg: 65.5561, aux.loss_seg: 0.3740, aux.acc_seg: 65.9515, loss: 1.3308
+2021-09-29 00:09:10,105 - mmseg - INFO - Iter [3500/160000]	lr: 9.805e-03, eta: 1 day, 18:14:09, time: 1.009, data_time: 0.219, memory: 20861, decode.loss_seg: 1.0565, decode.acc_seg: 63.3850, aux.loss_seg: 0.4085, aux.acc_seg: 64.7088, loss: 1.4650
+2021-09-29 00:09:58,148 - mmseg - INFO - Iter [3550/160000]	lr: 9.802e-03, eta: 1 day, 18:12:59, time: 0.962, data_time: 0.144, memory: 20861, decode.loss_seg: 0.9872, decode.acc_seg: 65.2995, aux.loss_seg: 0.3859, aux.acc_seg: 65.9988, loss: 1.3731
+2021-09-29 00:10:55,409 - mmseg - INFO - Iter [3600/160000]	lr: 9.799e-03, eta: 1 day, 18:18:26, time: 1.144, data_time: 0.163, memory: 20861, decode.loss_seg: 0.8518, decode.acc_seg: 68.7624, aux.loss_seg: 0.3399, aux.acc_seg: 69.2298, loss: 1.1917
+2021-09-29 00:11:36,569 - mmseg - INFO - Iter [3650/160000]	lr: 9.797e-03, eta: 1 day, 18:12:13, time: 0.823, data_time: 0.079, memory: 20861, decode.loss_seg: 0.9041, decode.acc_seg: 68.2438, aux.loss_seg: 0.3592, aux.acc_seg: 68.6559, loss: 1.2633
+2021-09-29 00:12:21,418 - mmseg - INFO - Iter [3700/160000]	lr: 9.794e-03, eta: 1 day, 18:08:50, time: 0.898, data_time: 0.067, memory: 20861, decode.loss_seg: 0.9638, decode.acc_seg: 65.6226, aux.loss_seg: 0.3833, aux.acc_seg: 65.9225, loss: 1.3471
+2021-09-29 00:13:09,231 - mmseg - INFO - Iter [3750/160000]	lr: 9.791e-03, eta: 1 day, 18:07:31, time: 0.956, data_time: 0.158, memory: 20861, decode.loss_seg: 0.9931, decode.acc_seg: 64.2798, aux.loss_seg: 0.3945, aux.acc_seg: 64.9239, loss: 1.3876
+2021-09-29 00:13:56,854 - mmseg - INFO - Iter [3800/160000]	lr: 9.788e-03, eta: 1 day, 18:06:04, time: 0.952, data_time: 0.114, memory: 20861, decode.loss_seg: 0.9799, decode.acc_seg: 63.2208, aux.loss_seg: 0.3849, aux.acc_seg: 63.6139, loss: 1.3649
+2021-09-29 00:14:43,968 - mmseg - INFO - Iter [3850/160000]	lr: 9.785e-03, eta: 1 day, 18:04:16, time: 0.941, data_time: 0.165, memory: 20861, decode.loss_seg: 0.8955, decode.acc_seg: 69.6725, aux.loss_seg: 0.3540, aux.acc_seg: 69.9930, loss: 1.2496
+2021-09-29 00:15:31,486 - mmseg - INFO - Iter [3900/160000]	lr: 9.783e-03, eta: 1 day, 18:02:46, time: 0.950, data_time: 0.130, memory: 20861, decode.loss_seg: 0.7931, decode.acc_seg: 69.6840, aux.loss_seg: 0.3157, aux.acc_seg: 69.9396, loss: 1.1089
+2021-09-29 00:16:29,526 - mmseg - INFO - Iter [3950/160000]	lr: 9.780e-03, eta: 1 day, 18:08:00, time: 1.153, data_time: 0.144, memory: 20861, decode.loss_seg: 0.9365, decode.acc_seg: 65.5163, aux.loss_seg: 0.3692, aux.acc_seg: 66.2018, loss: 1.3057
+2021-09-29 00:17:26,714 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 00:17:26,717 - mmseg - INFO - Iter [4000/160000]	lr: 9.777e-03, eta: 1 day, 18:13:06, time: 1.154, data_time: 0.233, memory: 20861, decode.loss_seg: 0.9015, decode.acc_seg: 66.3376, aux.loss_seg: 0.3573, aux.acc_seg: 66.7720, loss: 1.2588
+2021-09-29 00:18:13,082 - mmseg - INFO - Iter [4050/160000]	lr: 9.774e-03, eta: 1 day, 18:10:44, time: 0.926, data_time: 0.016, memory: 20861, decode.loss_seg: 0.9124, decode.acc_seg: 68.6372, aux.loss_seg: 0.3609, aux.acc_seg: 69.1994, loss: 1.2733
+2021-09-29 00:19:11,001 - mmseg - INFO - Iter [4100/160000]	lr: 9.771e-03, eta: 1 day, 18:15:38, time: 1.153, data_time: 0.219, memory: 20861, decode.loss_seg: 1.0143, decode.acc_seg: 61.6234, aux.loss_seg: 0.3908, aux.acc_seg: 62.7165, loss: 1.4052
+2021-09-29 00:19:58,619 - mmseg - INFO - Iter [4150/160000]	lr: 9.769e-03, eta: 1 day, 18:14:16, time: 0.958, data_time: 0.040, memory: 20861, decode.loss_seg: 0.8976, decode.acc_seg: 67.5648, aux.loss_seg: 0.3509, aux.acc_seg: 68.0261, loss: 1.2485
+2021-09-29 00:20:43,184 - mmseg - INFO - Iter [4200/160000]	lr: 9.766e-03, eta: 1 day, 18:10:51, time: 0.891, data_time: 0.057, memory: 20861, decode.loss_seg: 0.9321, decode.acc_seg: 66.8892, aux.loss_seg: 0.3701, aux.acc_seg: 67.1842, loss: 1.3021
+2021-09-29 00:21:27,649 - mmseg - INFO - Iter [4250/160000]	lr: 9.763e-03, eta: 1 day, 18:07:24, time: 0.888, data_time: 0.098, memory: 20861, decode.loss_seg: 0.8436, decode.acc_seg: 69.9186, aux.loss_seg: 0.3326, aux.acc_seg: 70.4757, loss: 1.1762
+2021-09-29 00:22:16,590 - mmseg - INFO - Iter [4300/160000]	lr: 9.760e-03, eta: 1 day, 18:06:46, time: 0.980, data_time: 0.174, memory: 20861, decode.loss_seg: 0.8148, decode.acc_seg: 69.9824, aux.loss_seg: 0.3244, aux.acc_seg: 70.4165, loss: 1.1392
+2021-09-29 00:23:06,058 - mmseg - INFO - Iter [4350/160000]	lr: 9.757e-03, eta: 1 day, 18:06:26, time: 0.989, data_time: 0.088, memory: 20861, decode.loss_seg: 0.8317, decode.acc_seg: 69.6999, aux.loss_seg: 0.3298, aux.acc_seg: 69.9396, loss: 1.1615
+2021-09-29 00:24:01,432 - mmseg - INFO - Iter [4400/160000]	lr: 9.755e-03, eta: 1 day, 18:09:33, time: 1.107, data_time: 0.113, memory: 20861, decode.loss_seg: 0.9312, decode.acc_seg: 66.8023, aux.loss_seg: 0.3663, aux.acc_seg: 67.5212, loss: 1.2974
+2021-09-29 00:24:54,318 - mmseg - INFO - Iter [4450/160000]	lr: 9.752e-03, eta: 1 day, 18:11:06, time: 1.056, data_time: 0.077, memory: 20861, decode.loss_seg: 1.0123, decode.acc_seg: 65.7166, aux.loss_seg: 0.3945, aux.acc_seg: 66.6579, loss: 1.4069
+2021-09-29 00:25:38,888 - mmseg - INFO - Iter [4500/160000]	lr: 9.749e-03, eta: 1 day, 18:07:50, time: 0.891, data_time: 0.057, memory: 20861, decode.loss_seg: 0.8721, decode.acc_seg: 71.4310, aux.loss_seg: 0.3490, aux.acc_seg: 71.3984, loss: 1.2211
+2021-09-29 00:26:31,308 - mmseg - INFO - Iter [4550/160000]	lr: 9.746e-03, eta: 1 day, 18:09:06, time: 1.049, data_time: 0.078, memory: 20861, decode.loss_seg: 0.9259, decode.acc_seg: 69.2343, aux.loss_seg: 0.3626, aux.acc_seg: 69.3948, loss: 1.2884
+2021-09-29 00:27:25,919 - mmseg - INFO - Iter [4600/160000]	lr: 9.744e-03, eta: 1 day, 18:11:36, time: 1.093, data_time: 0.128, memory: 20861, decode.loss_seg: 0.8361, decode.acc_seg: 68.8943, aux.loss_seg: 0.3308, aux.acc_seg: 69.5438, loss: 1.1670
+2021-09-29 00:28:13,056 - mmseg - INFO - Iter [4650/160000]	lr: 9.741e-03, eta: 1 day, 18:09:49, time: 0.943, data_time: 0.124, memory: 20861, decode.loss_seg: 0.8710, decode.acc_seg: 69.0328, aux.loss_seg: 0.3463, aux.acc_seg: 68.9972, loss: 1.2173
+2021-09-29 00:29:00,120 - mmseg - INFO - Iter [4700/160000]	lr: 9.738e-03, eta: 1 day, 18:08:00, time: 0.941, data_time: 0.144, memory: 20861, decode.loss_seg: 0.9123, decode.acc_seg: 68.6412, aux.loss_seg: 0.3627, aux.acc_seg: 68.9412, loss: 1.2750
+2021-09-29 00:29:45,675 - mmseg - INFO - Iter [4750/160000]	lr: 9.735e-03, eta: 1 day, 18:05:24, time: 0.911, data_time: 0.019, memory: 20861, decode.loss_seg: 0.8412, decode.acc_seg: 70.0006, aux.loss_seg: 0.3284, aux.acc_seg: 70.8509, loss: 1.1696
+2021-09-29 00:30:35,917 - mmseg - INFO - Iter [4800/160000]	lr: 9.732e-03, eta: 1 day, 18:05:20, time: 1.004, data_time: 0.144, memory: 20861, decode.loss_seg: 0.8947, decode.acc_seg: 66.5461, aux.loss_seg: 0.3516, aux.acc_seg: 67.0572, loss: 1.2463
+2021-09-29 00:31:13,859 - mmseg - INFO - Iter [4850/160000]	lr: 9.730e-03, eta: 1 day, 17:58:45, time: 0.759, data_time: 0.017, memory: 20861, decode.loss_seg: 0.9373, decode.acc_seg: 67.1541, aux.loss_seg: 0.3679, aux.acc_seg: 67.4668, loss: 1.3052
+2021-09-29 00:31:59,263 - mmseg - INFO - Iter [4900/160000]	lr: 9.727e-03, eta: 1 day, 17:56:12, time: 0.908, data_time: 0.105, memory: 20861, decode.loss_seg: 0.9137, decode.acc_seg: 67.7906, aux.loss_seg: 0.3622, aux.acc_seg: 68.1035, loss: 1.2759
+2021-09-29 00:32:45,878 - mmseg - INFO - Iter [4950/160000]	lr: 9.724e-03, eta: 1 day, 17:54:16, time: 0.931, data_time: 0.171, memory: 20861, decode.loss_seg: 0.8721, decode.acc_seg: 69.0489, aux.loss_seg: 0.3385, aux.acc_seg: 69.9116, loss: 1.2106
+2021-09-29 00:33:36,989 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 00:33:37,032 - mmseg - INFO - Iter [5000/160000]	lr: 9.721e-03, eta: 1 day, 17:54:47, time: 1.024, data_time: 0.186, memory: 20861, decode.loss_seg: 0.8550, decode.acc_seg: 70.8615, aux.loss_seg: 0.3378, aux.acc_seg: 71.0827, loss: 1.1929
+2021-09-29 00:34:19,015 - mmseg - INFO - Iter [5050/160000]	lr: 9.718e-03, eta: 1 day, 17:50:32, time: 0.839, data_time: 0.020, memory: 20861, decode.loss_seg: 0.9114, decode.acc_seg: 68.9950, aux.loss_seg: 0.3566, aux.acc_seg: 69.6646, loss: 1.2680
+2021-09-29 00:35:10,031 - mmseg - INFO - Iter [5100/160000]	lr: 9.716e-03, eta: 1 day, 17:50:58, time: 1.021, data_time: 0.225, memory: 20861, decode.loss_seg: 0.9436, decode.acc_seg: 67.6423, aux.loss_seg: 0.3762, aux.acc_seg: 67.8722, loss: 1.3198
+2021-09-29 00:35:58,602 - mmseg - INFO - Iter [5150/160000]	lr: 9.713e-03, eta: 1 day, 17:50:00, time: 0.966, data_time: 0.090, memory: 20861, decode.loss_seg: 0.8551, decode.acc_seg: 69.3698, aux.loss_seg: 0.3397, aux.acc_seg: 69.5935, loss: 1.1948
+2021-09-29 00:36:42,982 - mmseg - INFO - Iter [5200/160000]	lr: 9.710e-03, eta: 1 day, 17:47:13, time: 0.893, data_time: 0.045, memory: 20861, decode.loss_seg: 0.8913, decode.acc_seg: 70.1689, aux.loss_seg: 0.3488, aux.acc_seg: 70.5796, loss: 1.2400
+2021-09-29 00:37:25,971 - mmseg - INFO - Iter [5250/160000]	lr: 9.707e-03, eta: 1 day, 17:43:37, time: 0.858, data_time: 0.153, memory: 20861, decode.loss_seg: 0.7680, decode.acc_seg: 73.0361, aux.loss_seg: 0.3021, aux.acc_seg: 73.4483, loss: 1.0701
+2021-09-29 00:38:14,446 - mmseg - INFO - Iter [5300/160000]	lr: 9.704e-03, eta: 1 day, 17:42:37, time: 0.963, data_time: 0.097, memory: 20861, decode.loss_seg: 0.8512, decode.acc_seg: 72.0315, aux.loss_seg: 0.3342, aux.acc_seg: 72.2060, loss: 1.1854
+2021-09-29 00:38:55,451 - mmseg - INFO - Iter [5350/160000]	lr: 9.702e-03, eta: 1 day, 17:38:22, time: 0.828, data_time: 0.097, memory: 20861, decode.loss_seg: 0.8543, decode.acc_seg: 69.7696, aux.loss_seg: 0.3430, aux.acc_seg: 70.1606, loss: 1.1973
+2021-09-29 00:39:48,042 - mmseg - INFO - Iter [5400/160000]	lr: 9.699e-03, eta: 1 day, 17:39:32, time: 1.052, data_time: 0.168, memory: 20861, decode.loss_seg: 0.8716, decode.acc_seg: 69.4642, aux.loss_seg: 0.3475, aux.acc_seg: 69.8660, loss: 1.2191
+2021-09-29 00:40:34,717 - mmseg - INFO - Iter [5450/160000]	lr: 9.696e-03, eta: 1 day, 17:37:51, time: 0.934, data_time: 0.101, memory: 20861, decode.loss_seg: 0.8323, decode.acc_seg: 69.7252, aux.loss_seg: 0.3290, aux.acc_seg: 70.1245, loss: 1.1613
+2021-09-29 00:41:22,994 - mmseg - INFO - Iter [5500/160000]	lr: 9.693e-03, eta: 1 day, 17:36:57, time: 0.965, data_time: 0.129, memory: 20861, decode.loss_seg: 0.8132, decode.acc_seg: 70.9717, aux.loss_seg: 0.3199, aux.acc_seg: 71.6710, loss: 1.1331
+2021-09-29 00:42:12,587 - mmseg - INFO - Iter [5550/160000]	lr: 9.690e-03, eta: 1 day, 17:36:37, time: 0.991, data_time: 0.145, memory: 20861, decode.loss_seg: 0.8485, decode.acc_seg: 69.2511, aux.loss_seg: 0.3310, aux.acc_seg: 69.7299, loss: 1.1796
+2021-09-29 00:42:56,744 - mmseg - INFO - Iter [5600/160000]	lr: 9.688e-03, eta: 1 day, 17:33:49, time: 0.883, data_time: 0.107, memory: 20861, decode.loss_seg: 0.7621, decode.acc_seg: 71.4620, aux.loss_seg: 0.3032, aux.acc_seg: 71.5859, loss: 1.0653
+2021-09-29 00:43:35,876 - mmseg - INFO - Iter [5650/160000]	lr: 9.685e-03, eta: 1 day, 17:28:46, time: 0.783, data_time: 0.020, memory: 20861, decode.loss_seg: 0.8835, decode.acc_seg: 69.4971, aux.loss_seg: 0.3560, aux.acc_seg: 69.3502, loss: 1.2395
+2021-09-29 00:44:27,696 - mmseg - INFO - Iter [5700/160000]	lr: 9.682e-03, eta: 1 day, 17:29:36, time: 1.040, data_time: 0.207, memory: 20861, decode.loss_seg: 0.8248, decode.acc_seg: 70.7752, aux.loss_seg: 0.3289, aux.acc_seg: 70.7750, loss: 1.1537
+2021-09-29 00:45:06,016 - mmseg - INFO - Iter [5750/160000]	lr: 9.679e-03, eta: 1 day, 17:24:14, time: 0.764, data_time: 0.020, memory: 20861, decode.loss_seg: 0.8354, decode.acc_seg: 69.5792, aux.loss_seg: 0.3320, aux.acc_seg: 69.8710, loss: 1.1675
+2021-09-29 00:45:55,428 - mmseg - INFO - Iter [5800/160000]	lr: 9.676e-03, eta: 1 day, 17:23:53, time: 0.987, data_time: 0.180, memory: 20861, decode.loss_seg: 0.7927, decode.acc_seg: 69.8213, aux.loss_seg: 0.3195, aux.acc_seg: 69.9781, loss: 1.1122
+2021-09-29 00:46:45,380 - mmseg - INFO - Iter [5850/160000]	lr: 9.674e-03, eta: 1 day, 17:23:48, time: 0.999, data_time: 0.215, memory: 20861, decode.loss_seg: 0.8797, decode.acc_seg: 68.2174, aux.loss_seg: 0.3458, aux.acc_seg: 69.0686, loss: 1.2255
+2021-09-29 00:47:33,281 - mmseg - INFO - Iter [5900/160000]	lr: 9.671e-03, eta: 1 day, 17:22:35, time: 0.948, data_time: 0.165, memory: 20861, decode.loss_seg: 0.9756, decode.acc_seg: 67.2887, aux.loss_seg: 0.3837, aux.acc_seg: 67.4752, loss: 1.3593
+2021-09-29 00:48:20,838 - mmseg - INFO - Iter [5950/160000]	lr: 9.668e-03, eta: 1 day, 17:21:41, time: 0.962, data_time: 0.121, memory: 20861, decode.loss_seg: 0.8887, decode.acc_seg: 68.8394, aux.loss_seg: 0.3537, aux.acc_seg: 69.2625, loss: 1.2425
+2021-09-29 00:49:08,276 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 00:49:08,290 - mmseg - INFO - Iter [6000/160000]	lr: 9.665e-03, eta: 1 day, 17:20:29, time: 0.948, data_time: 0.109, memory: 20861, decode.loss_seg: 0.8685, decode.acc_seg: 68.3865, aux.loss_seg: 0.3438, aux.acc_seg: 68.9078, loss: 1.2124
+2021-09-29 00:50:00,922 - mmseg - INFO - Iter [6050/160000]	lr: 9.663e-03, eta: 1 day, 17:21:30, time: 1.053, data_time: 0.077, memory: 20861, decode.loss_seg: 0.8523, decode.acc_seg: 69.5589, aux.loss_seg: 0.3440, aux.acc_seg: 69.5884, loss: 1.1963
+2021-09-29 00:50:52,800 - mmseg - INFO - Iter [6100/160000]	lr: 9.660e-03, eta: 1 day, 17:22:09, time: 1.036, data_time: 0.099, memory: 20861, decode.loss_seg: 0.7491, decode.acc_seg: 71.9154, aux.loss_seg: 0.2925, aux.acc_seg: 72.4194, loss: 1.0416
+2021-09-29 00:51:35,623 - mmseg - INFO - Iter [6150/160000]	lr: 9.657e-03, eta: 1 day, 17:18:59, time: 0.855, data_time: 0.024, memory: 20861, decode.loss_seg: 0.7308, decode.acc_seg: 72.6321, aux.loss_seg: 0.2921, aux.acc_seg: 72.7937, loss: 1.0229
+2021-09-29 00:52:17,343 - mmseg - INFO - Iter [6200/160000]	lr: 9.654e-03, eta: 1 day, 17:15:28, time: 0.836, data_time: 0.190, memory: 20861, decode.loss_seg: 0.8215, decode.acc_seg: 72.7796, aux.loss_seg: 0.3217, aux.acc_seg: 73.2018, loss: 1.1432
+2021-09-29 00:52:53,605 - mmseg - INFO - Iter [6250/160000]	lr: 9.651e-03, eta: 1 day, 17:09:45, time: 0.726, data_time: 0.030, memory: 20861, decode.loss_seg: 0.8625, decode.acc_seg: 69.2440, aux.loss_seg: 0.3339, aux.acc_seg: 69.9854, loss: 1.1964
+2021-09-29 00:53:32,960 - mmseg - INFO - Iter [6300/160000]	lr: 9.649e-03, eta: 1 day, 17:05:23, time: 0.788, data_time: 0.018, memory: 20861, decode.loss_seg: 0.7362, decode.acc_seg: 71.9495, aux.loss_seg: 0.2939, aux.acc_seg: 71.9995, loss: 1.0301
+2021-09-29 00:54:11,155 - mmseg - INFO - Iter [6350/160000]	lr: 9.646e-03, eta: 1 day, 17:00:34, time: 0.764, data_time: 0.037, memory: 20861, decode.loss_seg: 0.8902, decode.acc_seg: 66.3112, aux.loss_seg: 0.3454, aux.acc_seg: 67.6444, loss: 1.2356
+2021-09-29 00:54:51,012 - mmseg - INFO - Iter [6400/160000]	lr: 9.643e-03, eta: 1 day, 16:56:29, time: 0.797, data_time: 0.067, memory: 20861, decode.loss_seg: 0.7888, decode.acc_seg: 70.9944, aux.loss_seg: 0.3116, aux.acc_seg: 70.9711, loss: 1.1005
+2021-09-29 00:55:35,478 - mmseg - INFO - Iter [6450/160000]	lr: 9.640e-03, eta: 1 day, 16:54:18, time: 0.889, data_time: 0.136, memory: 20861, decode.loss_seg: 0.7985, decode.acc_seg: 70.9422, aux.loss_seg: 0.3179, aux.acc_seg: 71.3451, loss: 1.1164
+2021-09-29 00:56:19,691 - mmseg - INFO - Iter [6500/160000]	lr: 9.637e-03, eta: 1 day, 16:52:01, time: 0.884, data_time: 0.151, memory: 20861, decode.loss_seg: 0.8316, decode.acc_seg: 71.2332, aux.loss_seg: 0.3334, aux.acc_seg: 70.9732, loss: 1.1650
+2021-09-29 00:57:02,531 - mmseg - INFO - Iter [6550/160000]	lr: 9.635e-03, eta: 1 day, 16:49:14, time: 0.857, data_time: 0.095, memory: 20861, decode.loss_seg: 0.9107, decode.acc_seg: 70.0398, aux.loss_seg: 0.3632, aux.acc_seg: 70.0138, loss: 1.2739
+2021-09-29 00:57:57,184 - mmseg - INFO - Iter [6600/160000]	lr: 9.632e-03, eta: 1 day, 16:51:04, time: 1.093, data_time: 0.243, memory: 20861, decode.loss_seg: 0.7754, decode.acc_seg: 71.2450, aux.loss_seg: 0.3065, aux.acc_seg: 72.0520, loss: 1.0819
+2021-09-29 00:58:37,547 - mmseg - INFO - Iter [6650/160000]	lr: 9.629e-03, eta: 1 day, 16:47:21, time: 0.807, data_time: 0.049, memory: 20861, decode.loss_seg: 0.8420, decode.acc_seg: 70.5580, aux.loss_seg: 0.3308, aux.acc_seg: 71.0892, loss: 1.1728
+2021-09-29 00:59:28,873 - mmseg - INFO - Iter [6700/160000]	lr: 9.626e-03, eta: 1 day, 16:47:51, time: 1.026, data_time: 0.249, memory: 20861, decode.loss_seg: 0.7701, decode.acc_seg: 72.0396, aux.loss_seg: 0.3061, aux.acc_seg: 72.2569, loss: 1.0762
+2021-09-29 01:00:02,937 - mmseg - INFO - Iter [6750/160000]	lr: 9.623e-03, eta: 1 day, 16:41:50, time: 0.682, data_time: 0.016, memory: 20861, decode.loss_seg: 0.7676, decode.acc_seg: 72.9414, aux.loss_seg: 0.3037, aux.acc_seg: 73.4449, loss: 1.0713
+2021-09-29 01:00:51,712 - mmseg - INFO - Iter [6800/160000]	lr: 9.621e-03, eta: 1 day, 16:41:22, time: 0.974, data_time: 0.194, memory: 20861, decode.loss_seg: 0.7003, decode.acc_seg: 73.1098, aux.loss_seg: 0.2733, aux.acc_seg: 73.4125, loss: 0.9736
+2021-09-29 01:01:37,627 - mmseg - INFO - Iter [6850/160000]	lr: 9.618e-03, eta: 1 day, 16:39:53, time: 0.919, data_time: 0.146, memory: 20861, decode.loss_seg: 0.7946, decode.acc_seg: 72.1850, aux.loss_seg: 0.3144, aux.acc_seg: 72.3812, loss: 1.1090
+2021-09-29 01:02:13,440 - mmseg - INFO - Iter [6900/160000]	lr: 9.615e-03, eta: 1 day, 16:34:40, time: 0.717, data_time: 0.077, memory: 20861, decode.loss_seg: 0.6939, decode.acc_seg: 72.0101, aux.loss_seg: 0.2751, aux.acc_seg: 72.1809, loss: 0.9690
+2021-09-29 01:03:01,997 - mmseg - INFO - Iter [6950/160000]	lr: 9.612e-03, eta: 1 day, 16:34:09, time: 0.970, data_time: 0.190, memory: 20861, decode.loss_seg: 0.8618, decode.acc_seg: 70.7493, aux.loss_seg: 0.3438, aux.acc_seg: 70.9113, loss: 1.2056
+2021-09-29 01:03:51,105 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 01:03:51,149 - mmseg - INFO - Iter [7000/160000]	lr: 9.609e-03, eta: 1 day, 16:33:54, time: 0.984, data_time: 0.176, memory: 20861, decode.loss_seg: 0.7917, decode.acc_seg: 71.7449, aux.loss_seg: 0.3143, aux.acc_seg: 71.9621, loss: 1.1059
+2021-09-29 01:04:29,702 - mmseg - INFO - Iter [7050/160000]	lr: 9.607e-03, eta: 1 day, 16:29:48, time: 0.772, data_time: 0.019, memory: 20861, decode.loss_seg: 0.8840, decode.acc_seg: 68.9564, aux.loss_seg: 0.3484, aux.acc_seg: 69.1014, loss: 1.2324
+2021-09-29 01:05:13,571 - mmseg - INFO - Iter [7100/160000]	lr: 9.604e-03, eta: 1 day, 16:27:38, time: 0.877, data_time: 0.115, memory: 20861, decode.loss_seg: 0.7453, decode.acc_seg: 74.8707, aux.loss_seg: 0.2965, aux.acc_seg: 74.9008, loss: 1.0418
+2021-09-29 01:05:54,541 - mmseg - INFO - Iter [7150/160000]	lr: 9.601e-03, eta: 1 day, 16:24:28, time: 0.820, data_time: 0.109, memory: 20861, decode.loss_seg: 0.9159, decode.acc_seg: 67.9248, aux.loss_seg: 0.3673, aux.acc_seg: 68.1647, loss: 1.2832
+2021-09-29 01:06:37,213 - mmseg - INFO - Iter [7200/160000]	lr: 9.598e-03, eta: 1 day, 16:21:56, time: 0.853, data_time: 0.080, memory: 20861, decode.loss_seg: 0.8094, decode.acc_seg: 72.3791, aux.loss_seg: 0.3202, aux.acc_seg: 72.6833, loss: 1.1296
+2021-09-29 01:07:26,604 - mmseg - INFO - Iter [7250/160000]	lr: 9.595e-03, eta: 1 day, 16:21:48, time: 0.989, data_time: 0.171, memory: 20861, decode.loss_seg: 0.7683, decode.acc_seg: 72.1186, aux.loss_seg: 0.2995, aux.acc_seg: 72.5373, loss: 1.0677
+2021-09-29 01:08:07,948 - mmseg - INFO - Iter [7300/160000]	lr: 9.593e-03, eta: 1 day, 16:18:51, time: 0.827, data_time: 0.047, memory: 20861, decode.loss_seg: 0.7371, decode.acc_seg: 71.8940, aux.loss_seg: 0.2904, aux.acc_seg: 72.0783, loss: 1.0275
+2021-09-29 01:08:53,319 - mmseg - INFO - Iter [7350/160000]	lr: 9.590e-03, eta: 1 day, 16:17:18, time: 0.907, data_time: 0.125, memory: 20861, decode.loss_seg: 0.7148, decode.acc_seg: 74.6655, aux.loss_seg: 0.2851, aux.acc_seg: 74.6726, loss: 0.9999
+2021-09-29 01:09:40,336 - mmseg - INFO - Iter [7400/160000]	lr: 9.587e-03, eta: 1 day, 16:16:21, time: 0.940, data_time: 0.167, memory: 20861, decode.loss_seg: 0.8308, decode.acc_seg: 69.8124, aux.loss_seg: 0.3267, aux.acc_seg: 70.7020, loss: 1.1576
+2021-09-29 01:10:33,590 - mmseg - INFO - Iter [7450/160000]	lr: 9.584e-03, eta: 1 day, 16:17:30, time: 1.064, data_time: 0.253, memory: 20861, decode.loss_seg: 0.8119, decode.acc_seg: 69.8027, aux.loss_seg: 0.3243, aux.acc_seg: 69.9280, loss: 1.1362
+2021-09-29 01:11:07,627 - mmseg - INFO - Iter [7500/160000]	lr: 9.581e-03, eta: 1 day, 16:12:08, time: 0.682, data_time: 0.017, memory: 20861, decode.loss_seg: 0.7936, decode.acc_seg: 72.0224, aux.loss_seg: 0.3114, aux.acc_seg: 72.3204, loss: 1.1050
+2021-09-29 01:11:41,714 - mmseg - INFO - Iter [7550/160000]	lr: 9.579e-03, eta: 1 day, 16:06:51, time: 0.682, data_time: 0.042, memory: 20861, decode.loss_seg: 0.6817, decode.acc_seg: 74.7925, aux.loss_seg: 0.2711, aux.acc_seg: 75.3269, loss: 0.9528
+2021-09-29 01:12:24,974 - mmseg - INFO - Iter [7600/160000]	lr: 9.576e-03, eta: 1 day, 16:04:42, time: 0.866, data_time: 0.108, memory: 20861, decode.loss_seg: 0.8426, decode.acc_seg: 71.4622, aux.loss_seg: 0.3321, aux.acc_seg: 71.7642, loss: 1.1747
+2021-09-29 01:13:00,055 - mmseg - INFO - Iter [7650/160000]	lr: 9.573e-03, eta: 1 day, 15:59:50, time: 0.701, data_time: 0.056, memory: 20861, decode.loss_seg: 0.8313, decode.acc_seg: 71.0946, aux.loss_seg: 0.3264, aux.acc_seg: 71.3575, loss: 1.1577
+2021-09-29 01:13:48,585 - mmseg - INFO - Iter [7700/160000]	lr: 9.570e-03, eta: 1 day, 15:59:28, time: 0.970, data_time: 0.191, memory: 20861, decode.loss_seg: 0.8086, decode.acc_seg: 73.2918, aux.loss_seg: 0.3191, aux.acc_seg: 73.7406, loss: 1.1277
+2021-09-29 01:14:25,227 - mmseg - INFO - Iter [7750/160000]	lr: 9.567e-03, eta: 1 day, 15:55:12, time: 0.733, data_time: 0.049, memory: 20861, decode.loss_seg: 0.8920, decode.acc_seg: 70.5540, aux.loss_seg: 0.3575, aux.acc_seg: 70.4357, loss: 1.2495
+2021-09-29 01:15:08,182 - mmseg - INFO - Iter [7800/160000]	lr: 9.565e-03, eta: 1 day, 15:53:03, time: 0.860, data_time: 0.160, memory: 20861, decode.loss_seg: 0.6716, decode.acc_seg: 73.6598, aux.loss_seg: 0.2624, aux.acc_seg: 74.0024, loss: 0.9340
+2021-09-29 01:15:57,331 - mmseg - INFO - Iter [7850/160000]	lr: 9.562e-03, eta: 1 day, 15:52:54, time: 0.983, data_time: 0.193, memory: 20861, decode.loss_seg: 0.8012, decode.acc_seg: 69.1102, aux.loss_seg: 0.3189, aux.acc_seg: 69.0046, loss: 1.1201
+2021-09-29 01:16:42,253 - mmseg - INFO - Iter [7900/160000]	lr: 9.559e-03, eta: 1 day, 15:51:23, time: 0.898, data_time: 0.116, memory: 20861, decode.loss_seg: 0.8733, decode.acc_seg: 68.3810, aux.loss_seg: 0.3448, aux.acc_seg: 68.9616, loss: 1.2180
+2021-09-29 01:17:27,148 - mmseg - INFO - Iter [7950/160000]	lr: 9.556e-03, eta: 1 day, 15:49:52, time: 0.898, data_time: 0.121, memory: 20861, decode.loss_seg: 0.8342, decode.acc_seg: 70.7565, aux.loss_seg: 0.3276, aux.acc_seg: 70.9200, loss: 1.1618
+2021-09-29 01:18:10,650 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 01:18:10,700 - mmseg - INFO - Iter [8000/160000]	lr: 9.553e-03, eta: 1 day, 15:47:56, time: 0.870, data_time: 0.175, memory: 20861, decode.loss_seg: 0.7220, decode.acc_seg: 73.3923, aux.loss_seg: 0.2862, aux.acc_seg: 73.5401, loss: 1.0083
+2021-09-29 01:18:50,784 - mmseg - INFO - Iter [8050/160000]	lr: 9.551e-03, eta: 1 day, 15:44:57, time: 0.802, data_time: 0.024, memory: 20861, decode.loss_seg: 0.6936, decode.acc_seg: 73.1129, aux.loss_seg: 0.2758, aux.acc_seg: 73.4334, loss: 0.9694
+2021-09-29 01:19:40,877 - mmseg - INFO - Iter [8100/160000]	lr: 9.548e-03, eta: 1 day, 15:45:04, time: 1.000, data_time: 0.188, memory: 20861, decode.loss_seg: 0.7344, decode.acc_seg: 73.0097, aux.loss_seg: 0.2930, aux.acc_seg: 72.9932, loss: 1.0275
+2021-09-29 01:20:16,991 - mmseg - INFO - Iter [8150/160000]	lr: 9.545e-03, eta: 1 day, 15:40:53, time: 0.723, data_time: 0.019, memory: 20861, decode.loss_seg: 0.7723, decode.acc_seg: 73.8981, aux.loss_seg: 0.3007, aux.acc_seg: 74.4054, loss: 1.0730
+2021-09-29 01:20:51,946 - mmseg - INFO - Iter [8200/160000]	lr: 9.542e-03, eta: 1 day, 15:36:23, time: 0.700, data_time: 0.064, memory: 20861, decode.loss_seg: 0.7861, decode.acc_seg: 69.4909, aux.loss_seg: 0.3117, aux.acc_seg: 69.7326, loss: 1.0978
+2021-09-29 01:21:32,297 - mmseg - INFO - Iter [8250/160000]	lr: 9.539e-03, eta: 1 day, 15:33:33, time: 0.806, data_time: 0.107, memory: 20861, decode.loss_seg: 0.6835, decode.acc_seg: 76.2659, aux.loss_seg: 0.2738, aux.acc_seg: 76.1693, loss: 0.9573
+2021-09-29 01:22:13,287 - mmseg - INFO - Iter [8300/160000]	lr: 9.537e-03, eta: 1 day, 15:30:58, time: 0.819, data_time: 0.092, memory: 20861, decode.loss_seg: 0.6996, decode.acc_seg: 73.2791, aux.loss_seg: 0.2774, aux.acc_seg: 73.3910, loss: 0.9770
+2021-09-29 01:22:56,894 - mmseg - INFO - Iter [8350/160000]	lr: 9.534e-03, eta: 1 day, 15:29:11, time: 0.872, data_time: 0.109, memory: 20861, decode.loss_seg: 0.8218, decode.acc_seg: 71.5223, aux.loss_seg: 0.3253, aux.acc_seg: 71.7261, loss: 1.1472
+2021-09-29 01:23:33,939 - mmseg - INFO - Iter [8400/160000]	lr: 9.531e-03, eta: 1 day, 15:25:26, time: 0.740, data_time: 0.028, memory: 20861, decode.loss_seg: 0.7967, decode.acc_seg: 71.5473, aux.loss_seg: 0.3168, aux.acc_seg: 71.5557, loss: 1.1135
+2021-09-29 01:24:19,103 - mmseg - INFO - Iter [8450/160000]	lr: 9.528e-03, eta: 1 day, 15:24:09, time: 0.902, data_time: 0.147, memory: 20861, decode.loss_seg: 0.7148, decode.acc_seg: 72.5024, aux.loss_seg: 0.2783, aux.acc_seg: 72.8359, loss: 0.9931
+2021-09-29 01:24:53,391 - mmseg - INFO - Iter [8500/160000]	lr: 9.525e-03, eta: 1 day, 15:19:42, time: 0.689, data_time: 0.025, memory: 20861, decode.loss_seg: 0.8225, decode.acc_seg: 71.0226, aux.loss_seg: 0.3267, aux.acc_seg: 71.3587, loss: 1.1493
+2021-09-29 01:25:31,647 - mmseg - INFO - Iter [8550/160000]	lr: 9.523e-03, eta: 1 day, 15:16:25, time: 0.765, data_time: 0.096, memory: 20861, decode.loss_seg: 0.7782, decode.acc_seg: 72.1934, aux.loss_seg: 0.3105, aux.acc_seg: 72.2473, loss: 1.0887
+2021-09-29 01:26:05,563 - mmseg - INFO - Iter [8600/160000]	lr: 9.520e-03, eta: 1 day, 15:11:54, time: 0.679, data_time: 0.021, memory: 20861, decode.loss_seg: 0.6817, decode.acc_seg: 74.3367, aux.loss_seg: 0.2681, aux.acc_seg: 74.5886, loss: 0.9499
+2021-09-29 01:26:50,449 - mmseg - INFO - Iter [8650/160000]	lr: 9.517e-03, eta: 1 day, 15:10:37, time: 0.897, data_time: 0.152, memory: 20861, decode.loss_seg: 0.7902, decode.acc_seg: 71.4463, aux.loss_seg: 0.3097, aux.acc_seg: 71.9033, loss: 1.0999
+2021-09-29 01:27:36,454 - mmseg - INFO - Iter [8700/160000]	lr: 9.514e-03, eta: 1 day, 15:09:41, time: 0.921, data_time: 0.201, memory: 20861, decode.loss_seg: 0.7561, decode.acc_seg: 73.8867, aux.loss_seg: 0.3020, aux.acc_seg: 73.7974, loss: 1.0581
+2021-09-29 01:28:15,113 - mmseg - INFO - Iter [8750/160000]	lr: 9.511e-03, eta: 1 day, 15:06:36, time: 0.772, data_time: 0.032, memory: 20861, decode.loss_seg: 0.6333, decode.acc_seg: 73.1231, aux.loss_seg: 0.2511, aux.acc_seg: 73.2771, loss: 0.8844
+2021-09-29 01:28:58,379 - mmseg - INFO - Iter [8800/160000]	lr: 9.509e-03, eta: 1 day, 15:04:53, time: 0.865, data_time: 0.137, memory: 20861, decode.loss_seg: 0.7110, decode.acc_seg: 74.9447, aux.loss_seg: 0.2810, aux.acc_seg: 75.1520, loss: 0.9919
+2021-09-29 01:30:01,319 - mmseg - INFO - Iter [8850/160000]	lr: 9.506e-03, eta: 1 day, 15:08:48, time: 1.260, data_time: 0.158, memory: 20861, decode.loss_seg: 0.8161, decode.acc_seg: 71.8754, aux.loss_seg: 0.3219, aux.acc_seg: 72.5092, loss: 1.1380
+2021-09-29 01:30:38,645 - mmseg - INFO - Iter [8900/160000]	lr: 9.503e-03, eta: 1 day, 15:05:21, time: 0.744, data_time: 0.065, memory: 20861, decode.loss_seg: 0.7162, decode.acc_seg: 73.6768, aux.loss_seg: 0.2830, aux.acc_seg: 74.0259, loss: 0.9992
+2021-09-29 01:31:30,734 - mmseg - INFO - Iter [8950/160000]	lr: 9.500e-03, eta: 1 day, 15:06:08, time: 1.042, data_time: 0.263, memory: 20861, decode.loss_seg: 0.6781, decode.acc_seg: 74.9667, aux.loss_seg: 0.2680, aux.acc_seg: 75.3943, loss: 0.9461
+2021-09-29 01:32:14,470 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 01:32:14,475 - mmseg - INFO - Iter [9000/160000]	lr: 9.497e-03, eta: 1 day, 15:04:35, time: 0.877, data_time: 0.133, memory: 20861, decode.loss_seg: 0.6501, decode.acc_seg: 75.7100, aux.loss_seg: 0.2570, aux.acc_seg: 75.9989, loss: 0.9071
+2021-09-29 01:33:08,195 - mmseg - INFO - Iter [9050/160000]	lr: 9.495e-03, eta: 1 day, 15:05:47, time: 1.074, data_time: 0.193, memory: 20861, decode.loss_seg: 0.6496, decode.acc_seg: 75.7175, aux.loss_seg: 0.2556, aux.acc_seg: 75.9614, loss: 0.9051
+2021-09-29 01:33:49,828 - mmseg - INFO - Iter [9100/160000]	lr: 9.492e-03, eta: 1 day, 15:03:38, time: 0.832, data_time: 0.090, memory: 20861, decode.loss_seg: 0.7123, decode.acc_seg: 74.0005, aux.loss_seg: 0.2809, aux.acc_seg: 74.6137, loss: 0.9932
+2021-09-29 01:34:28,269 - mmseg - INFO - Iter [9150/160000]	lr: 9.489e-03, eta: 1 day, 15:00:37, time: 0.769, data_time: 0.021, memory: 20861, decode.loss_seg: 0.8493, decode.acc_seg: 69.7363, aux.loss_seg: 0.3347, aux.acc_seg: 70.2795, loss: 1.1840
+2021-09-29 01:35:03,435 - mmseg - INFO - Iter [9200/160000]	lr: 9.486e-03, eta: 1 day, 14:56:43, time: 0.703, data_time: 0.026, memory: 20861, decode.loss_seg: 0.6949, decode.acc_seg: 74.7653, aux.loss_seg: 0.2764, aux.acc_seg: 74.8632, loss: 0.9713
+2021-09-29 01:35:51,136 - mmseg - INFO - Iter [9250/160000]	lr: 9.483e-03, eta: 1 day, 14:56:18, time: 0.956, data_time: 0.136, memory: 20861, decode.loss_seg: 0.8246, decode.acc_seg: 71.6291, aux.loss_seg: 0.3228, aux.acc_seg: 71.9296, loss: 1.1474
+2021-09-29 01:36:34,846 - mmseg - INFO - Iter [9300/160000]	lr: 9.481e-03, eta: 1 day, 14:54:46, time: 0.874, data_time: 0.142, memory: 20861, decode.loss_seg: 0.7840, decode.acc_seg: 72.0690, aux.loss_seg: 0.3069, aux.acc_seg: 72.5908, loss: 1.0909
+2021-09-29 01:37:08,751 - mmseg - INFO - Iter [9350/160000]	lr: 9.478e-03, eta: 1 day, 14:50:37, time: 0.678, data_time: 0.025, memory: 20861, decode.loss_seg: 0.6830, decode.acc_seg: 74.4681, aux.loss_seg: 0.2705, aux.acc_seg: 74.7484, loss: 0.9535
+2021-09-29 01:37:44,305 - mmseg - INFO - Iter [9400/160000]	lr: 9.475e-03, eta: 1 day, 14:46:57, time: 0.711, data_time: 0.091, memory: 20861, decode.loss_seg: 0.6733, decode.acc_seg: 72.9784, aux.loss_seg: 0.2658, aux.acc_seg: 73.2020, loss: 0.9391
+2021-09-29 01:38:33,397 - mmseg - INFO - Iter [9450/160000]	lr: 9.472e-03, eta: 1 day, 14:46:54, time: 0.982, data_time: 0.131, memory: 20861, decode.loss_seg: 0.6204, decode.acc_seg: 77.1045, aux.loss_seg: 0.2431, aux.acc_seg: 77.2884, loss: 0.8635
+2021-09-29 01:39:24,979 - mmseg - INFO - Iter [9500/160000]	lr: 9.469e-03, eta: 1 day, 14:47:30, time: 1.032, data_time: 0.123, memory: 20861, decode.loss_seg: 0.7035, decode.acc_seg: 76.0618, aux.loss_seg: 0.2746, aux.acc_seg: 76.5448, loss: 0.9781
+2021-09-29 01:40:11,362 - mmseg - INFO - Iter [9550/160000]	lr: 9.467e-03, eta: 1 day, 14:46:44, time: 0.928, data_time: 0.135, memory: 20861, decode.loss_seg: 0.9231, decode.acc_seg: 68.0185, aux.loss_seg: 0.3659, aux.acc_seg: 68.2735, loss: 1.2890
+2021-09-29 01:40:54,108 - mmseg - INFO - Iter [9600/160000]	lr: 9.464e-03, eta: 1 day, 14:45:00, time: 0.854, data_time: 0.093, memory: 20861, decode.loss_seg: 0.7652, decode.acc_seg: 71.3905, aux.loss_seg: 0.2991, aux.acc_seg: 71.8657, loss: 1.0643
+2021-09-29 01:41:35,579 - mmseg - INFO - Iter [9650/160000]	lr: 9.461e-03, eta: 1 day, 14:42:56, time: 0.829, data_time: 0.105, memory: 20861, decode.loss_seg: 0.7105, decode.acc_seg: 73.2229, aux.loss_seg: 0.2804, aux.acc_seg: 73.3614, loss: 0.9910
+2021-09-29 01:42:10,560 - mmseg - INFO - Iter [9700/160000]	lr: 9.458e-03, eta: 1 day, 14:39:14, time: 0.700, data_time: 0.034, memory: 20861, decode.loss_seg: 0.7854, decode.acc_seg: 71.0208, aux.loss_seg: 0.3119, aux.acc_seg: 71.3289, loss: 1.0973
+2021-09-29 01:42:53,687 - mmseg - INFO - Iter [9750/160000]	lr: 9.455e-03, eta: 1 day, 14:37:39, time: 0.863, data_time: 0.145, memory: 20861, decode.loss_seg: 0.7813, decode.acc_seg: 73.4527, aux.loss_seg: 0.3035, aux.acc_seg: 73.8558, loss: 1.0848
+2021-09-29 01:43:46,866 - mmseg - INFO - Iter [9800/160000]	lr: 9.453e-03, eta: 1 day, 14:38:41, time: 1.067, data_time: 0.246, memory: 20861, decode.loss_seg: 0.6839, decode.acc_seg: 74.5116, aux.loss_seg: 0.2686, aux.acc_seg: 74.7536, loss: 0.9525
+2021-09-29 01:44:21,639 - mmseg - INFO - Iter [9850/160000]	lr: 9.450e-03, eta: 1 day, 14:34:50, time: 0.683, data_time: 0.023, memory: 20861, decode.loss_seg: 0.8132, decode.acc_seg: 70.1685, aux.loss_seg: 0.3182, aux.acc_seg: 70.6872, loss: 1.1314
+2021-09-29 01:45:07,985 - mmseg - INFO - Iter [9900/160000]	lr: 9.447e-03, eta: 1 day, 14:34:12, time: 0.936, data_time: 0.123, memory: 20861, decode.loss_seg: 0.6940, decode.acc_seg: 74.7889, aux.loss_seg: 0.2740, aux.acc_seg: 75.0278, loss: 0.9680
+2021-09-29 01:45:47,226 - mmseg - INFO - Iter [9950/160000]	lr: 9.444e-03, eta: 1 day, 14:31:40, time: 0.784, data_time: 0.017, memory: 20861, decode.loss_seg: 0.7641, decode.acc_seg: 72.9490, aux.loss_seg: 0.2996, aux.acc_seg: 73.2027, loss: 1.0637
+2021-09-29 01:46:38,128 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 01:46:38,133 - mmseg - INFO - Iter [10000/160000]	lr: 9.441e-03, eta: 1 day, 14:32:04, time: 1.019, data_time: 0.208, memory: 20861, decode.loss_seg: 0.7867, decode.acc_seg: 71.0204, aux.loss_seg: 0.3100, aux.acc_seg: 71.6572, loss: 1.0967
+2021-09-29 01:47:24,816 - mmseg - INFO - Iter [10050/160000]	lr: 9.439e-03, eta: 1 day, 14:31:27, time: 0.938, data_time: 0.173, memory: 20861, decode.loss_seg: 0.6817, decode.acc_seg: 74.2058, aux.loss_seg: 0.2734, aux.acc_seg: 74.3344, loss: 0.9550
+2021-09-29 01:48:03,584 - mmseg - INFO - Iter [10100/160000]	lr: 9.436e-03, eta: 1 day, 14:28:48, time: 0.772, data_time: 0.016, memory: 20861, decode.loss_seg: 0.8188, decode.acc_seg: 71.7416, aux.loss_seg: 0.3185, aux.acc_seg: 72.3172, loss: 1.1373
+2021-09-29 01:48:43,959 - mmseg - INFO - Iter [10150/160000]	lr: 9.433e-03, eta: 1 day, 14:26:35, time: 0.807, data_time: 0.137, memory: 20861, decode.loss_seg: 0.7198, decode.acc_seg: 71.3074, aux.loss_seg: 0.2886, aux.acc_seg: 71.5566, loss: 1.0085
+2021-09-29 01:49:42,185 - mmseg - INFO - Iter [10200/160000]	lr: 9.430e-03, eta: 1 day, 14:28:46, time: 1.165, data_time: 0.211, memory: 20861, decode.loss_seg: 0.6423, decode.acc_seg: 73.6033, aux.loss_seg: 0.2551, aux.acc_seg: 73.9521, loss: 0.8974
+2021-09-29 01:50:15,612 - mmseg - INFO - Iter [10250/160000]	lr: 9.427e-03, eta: 1 day, 14:24:52, time: 0.669, data_time: 0.019, memory: 20861, decode.loss_seg: 0.6907, decode.acc_seg: 74.8608, aux.loss_seg: 0.2718, aux.acc_seg: 75.1694, loss: 0.9625
+2021-09-29 01:50:52,659 - mmseg - INFO - Iter [10300/160000]	lr: 9.425e-03, eta: 1 day, 14:21:53, time: 0.740, data_time: 0.042, memory: 20861, decode.loss_seg: 0.7434, decode.acc_seg: 74.0344, aux.loss_seg: 0.2947, aux.acc_seg: 73.8961, loss: 1.0382
+2021-09-29 01:51:37,739 - mmseg - INFO - Iter [10350/160000]	lr: 9.422e-03, eta: 1 day, 14:20:52, time: 0.902, data_time: 0.179, memory: 20861, decode.loss_seg: 0.6438, decode.acc_seg: 75.9439, aux.loss_seg: 0.2605, aux.acc_seg: 76.0036, loss: 0.9044
+2021-09-29 01:52:18,351 - mmseg - INFO - Iter [10400/160000]	lr: 9.419e-03, eta: 1 day, 14:18:47, time: 0.812, data_time: 0.092, memory: 20861, decode.loss_seg: 0.7909, decode.acc_seg: 71.9817, aux.loss_seg: 0.3084, aux.acc_seg: 72.6882, loss: 1.0993
+2021-09-29 01:53:00,883 - mmseg - INFO - Iter [10450/160000]	lr: 9.416e-03, eta: 1 day, 14:17:10, time: 0.851, data_time: 0.156, memory: 20861, decode.loss_seg: 0.7677, decode.acc_seg: 75.1558, aux.loss_seg: 0.3047, aux.acc_seg: 75.4425, loss: 1.0723
+2021-09-29 01:53:47,727 - mmseg - INFO - Iter [10500/160000]	lr: 9.413e-03, eta: 1 day, 14:16:34, time: 0.937, data_time: 0.185, memory: 20861, decode.loss_seg: 0.7147, decode.acc_seg: 74.7380, aux.loss_seg: 0.2848, aux.acc_seg: 75.1795, loss: 0.9995
+2021-09-29 01:54:24,794 - mmseg - INFO - Iter [10550/160000]	lr: 9.411e-03, eta: 1 day, 14:13:40, time: 0.741, data_time: 0.017, memory: 20861, decode.loss_seg: 0.7517, decode.acc_seg: 74.1161, aux.loss_seg: 0.2880, aux.acc_seg: 74.5722, loss: 1.0396
+2021-09-29 01:54:57,206 - mmseg - INFO - Iter [10600/160000]	lr: 9.408e-03, eta: 1 day, 14:09:44, time: 0.650, data_time: 0.016, memory: 20861, decode.loss_seg: 0.6945, decode.acc_seg: 73.7533, aux.loss_seg: 0.2774, aux.acc_seg: 74.0448, loss: 0.9719
+2021-09-29 01:55:49,562 - mmseg - INFO - Iter [10650/160000]	lr: 9.405e-03, eta: 1 day, 14:10:26, time: 1.045, data_time: 0.255, memory: 20861, decode.loss_seg: 0.7662, decode.acc_seg: 73.9245, aux.loss_seg: 0.3024, aux.acc_seg: 74.2990, loss: 1.0686
+2021-09-29 01:56:25,752 - mmseg - INFO - Iter [10700/160000]	lr: 9.402e-03, eta: 1 day, 14:07:23, time: 0.724, data_time: 0.015, memory: 20861, decode.loss_seg: 0.8045, decode.acc_seg: 71.5926, aux.loss_seg: 0.3214, aux.acc_seg: 71.7971, loss: 1.1259
+2021-09-29 01:57:07,579 - mmseg - INFO - Iter [10750/160000]	lr: 9.399e-03, eta: 1 day, 14:05:39, time: 0.836, data_time: 0.074, memory: 20861, decode.loss_seg: 0.6293, decode.acc_seg: 75.9063, aux.loss_seg: 0.2541, aux.acc_seg: 75.9833, loss: 0.8834
+2021-09-29 01:57:53,711 - mmseg - INFO - Iter [10800/160000]	lr: 9.397e-03, eta: 1 day, 14:04:55, time: 0.922, data_time: 0.154, memory: 20861, decode.loss_seg: 0.6061, decode.acc_seg: 73.8943, aux.loss_seg: 0.2433, aux.acc_seg: 74.0016, loss: 0.8494
+2021-09-29 01:58:40,634 - mmseg - INFO - Iter [10850/160000]	lr: 9.394e-03, eta: 1 day, 14:04:26, time: 0.943, data_time: 0.178, memory: 20861, decode.loss_seg: 0.8204, decode.acc_seg: 72.9355, aux.loss_seg: 0.3230, aux.acc_seg: 73.3298, loss: 1.1435
+2021-09-29 01:59:19,987 - mmseg - INFO - Iter [10900/160000]	lr: 9.391e-03, eta: 1 day, 14:02:07, time: 0.784, data_time: 0.074, memory: 20861, decode.loss_seg: 0.6795, decode.acc_seg: 74.4572, aux.loss_seg: 0.2684, aux.acc_seg: 74.6291, loss: 0.9478
+2021-09-29 02:00:14,694 - mmseg - INFO - Iter [10950/160000]	lr: 9.388e-03, eta: 1 day, 14:03:21, time: 1.094, data_time: 0.163, memory: 20861, decode.loss_seg: 0.6121, decode.acc_seg: 77.1952, aux.loss_seg: 0.2405, aux.acc_seg: 77.7738, loss: 0.8525
+2021-09-29 02:00:49,459 - mmseg - INFO - Exp name: fcn_unet_s7-d64_enc-dilation-2222222_dec-dilation-222222_512x1024_160k_cityscapes.py
+2021-09-29 02:00:49,461 - mmseg - INFO - Iter [11000/160000]	lr: 9.385e-03, eta: 1 day, 14:00:03, time: 0.695, data_time: 0.016, memory: 20861, decode.loss_seg: 0.7477, decode.acc_seg: 74.5836, aux.loss_seg: 0.2926, aux.acc_seg: 74.9211, loss: 1.0404
+2021-09-29 02:01:22,351 - mmseg - INFO - Iter [11050/160000]	lr: 9.383e-03, eta: 1 day, 13:56:22, time: 0.658, data_time: 0.022, memory: 20861, decode.loss_seg: 0.8400, decode.acc_seg: 72.2216, aux.loss_seg: 0.3318, aux.acc_seg: 72.9810, loss: 1.1718
+2021-09-29 02:02:11,180 - mmseg - INFO - Iter [11100/160000]	lr: 9.380e-03, eta: 1 day, 13:56:16, time: 0.977, data_time: 0.201, memory: 20861, decode.loss_seg: 0.7426, decode.acc_seg: 72.8038, aux.loss_seg: 0.2958, aux.acc_seg: 73.0711, loss: 1.0384
+2021-09-29 02:02:52,117 - mmseg - INFO - Iter [11150/160000]	lr: 9.377e-03, eta: 1 day, 13:54:25, time: 0.819, data_time: 0.067, memory: 20861, decode.loss_seg: 0.6879, decode.acc_seg: 75.0603, aux.loss_seg: 0.2761, aux.acc_seg: 75.3032, loss: 0.9641
+2021-09-29 02:03:31,456 - mmseg - INFO - Iter [11200/160000]	lr: 9.374e-03, eta: 1 day, 13:52:12, time: 0.787, data_time: 0.096, memory: 20861, decode.loss_seg: 0.7129, decode.acc_seg: 74.8823, aux.loss_seg: 0.2819, aux.acc_seg: 75.2202, loss: 0.9948
+2021-09-29 02:04:14,516 - mmseg - INFO - Iter [11250/160000]	lr: 9.371e-03, eta: 1 day, 13:50:50, time: 0.861, data_time: 0.117, memory: 20861, decode.loss_seg: 0.8023, decode.acc_seg: 72.2043, aux.loss_seg: 0.3161, aux.acc_seg: 72.3811, loss: 1.1185
+2021-09-29 02:04:56,342 - mmseg - INFO - Iter [11300/160000]	lr: 9.369e-03, eta: 1 day, 13:49:12, time: 0.836, data_time: 0.131, memory: 20861, decode.loss_seg: 0.6959, decode.acc_seg: 74.4288, aux.loss_seg: 0.2739, aux.acc_seg: 74.6033, loss: 0.9698
+2021-09-29 02:05:41,812 - mmseg - INFO - Iter [11350/160000]	lr: 9.366e-03, eta: 1 day, 13:48:20, time: 0.906, data_time: 0.169, memory: 20861, decode.loss_seg: 0.7016, decode.acc_seg: 73.4475, aux.loss_seg: 0.2799, aux.acc_seg: 73.7057, loss: 0.9815
+2021-09-29 02:06:25,899 - mmseg - INFO - Iter [11400/160000]	lr: 9.363e-03, eta: 1 day, 13:47:14, time: 0.884, data_time: 0.139, memory: 20861, decode.loss_seg: 0.7325, decode.acc_seg: 73.3064, aux.loss_seg: 0.2895, aux.acc_seg: 73.5361, loss: 1.0221
+2021-09-29 02:07:12,334 - mmseg - INFO - Iter [11450/160000]	lr: 9.360e-03, eta: 1 day, 13:46:37, time: 0.929, data_time: 0.163, memory: 20861, decode.loss_seg: 0.7640, decode.acc_seg: 72.9848, aux.loss_seg: 0.2999, aux.acc_seg: 73.2259, loss: 1.0639
+2021-09-29 02:07:47,788 - mmseg - INFO - Iter [11500/160000]	lr: 9.357e-03, eta: 1 day, 13:43:38, time: 0.709, data_time: 0.038, memory: 20861, decode.loss_seg: 0.6806, decode.acc_seg: 74.4778, aux.loss_seg: 0.2652, aux.acc_seg: 74.9168, loss: 0.9458
+2021-09-29 02:08:34,023 - mmseg - INFO - Iter [11550/160000]	lr: 9.354e-03, eta: 1 day, 13:42:59, time: 0.926, data_time: 0.141, memory: 20861, decode.loss_seg: 0.6700, decode.acc_seg: 75.9002, aux.loss_seg: 0.2647, aux.acc_seg: 76.3195, loss: 0.9347
+2021-09-29 02:09:18,330 - mmseg - INFO - Iter [11600/160000]	lr: 9.352e-03, eta: 1 day, 13:41:55, time: 0.886, data_time: 0.143, memory: 20861, decode.loss_seg: 0.6644, decode.acc_seg: 73.9201, aux.loss_seg: 0.2627, aux.acc_seg: 74.0997, loss: 0.9271
+2021-09-29 02:09:53,959 - mmseg - INFO - Iter [11650/160000]	lr: 9.349e-03, eta: 1 day, 13:38:58, time: 0.709, data_time: 0.026, memory: 20861, decode.loss_seg: 0.6013, decode.acc_seg: 77.6194, aux.loss_seg: 0.2418, aux.acc_seg: 77.7264, loss: 0.8431

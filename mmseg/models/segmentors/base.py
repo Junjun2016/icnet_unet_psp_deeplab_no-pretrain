@@ -1,13 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-from abc import ABCMeta, abstractmethod
-from collections import OrderedDict
-
 import mmcv
 import numpy as np
 import torch
 import torch.distributed as dist
+import warnings
+from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 from mmcv.runner import BaseModule, auto_fp16
+
+# from mmcv.runner.hooks.logger.text import TextLoggerHook
 
 
 class BaseSegmentor(BaseModule, metaclass=ABCMeta):
@@ -135,7 +136,7 @@ class BaseSegmentor(BaseModule, metaclass=ABCMeta):
                 DDP, it means the batch size on each GPU), which is used for
                 averaging the logs.
         """
-        losses = self(**data_batch)
+        losses = self(**data_batch, **kwargs)
         loss, log_vars = self._parse_losses(losses)
 
         outputs = dict(
@@ -152,8 +153,15 @@ class BaseSegmentor(BaseModule, metaclass=ABCMeta):
         during val epochs. Note that the evaluation after training epochs is
         not implemented with this method, but an evaluation hook.
         """
-        output = self(**data_batch, **kwargs)
-        return output
+        losses = self(**data_batch, **kwargs)
+        loss, log_vars = self._parse_losses(losses)
+
+        outputs = dict(
+            loss=loss,
+            log_vars=log_vars,
+            num_samples=len(data_batch['img_metas']))
+
+        return outputs
 
     @staticmethod
     def _parse_losses(losses):
