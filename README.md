@@ -2,6 +2,8 @@
 
 🔥🔥 Based on [MMsegmentation](https://github.com/open-mmlab/mmsegmentation) 🔥🔥
 
+Please refer to [`./results`](https://github.com/Junjun2016/icnet_unet_psp_deeplab_no-pretrain/tree/master/results) directory for more results.
+
 ## Cityscapes
 
 ### ICNet
