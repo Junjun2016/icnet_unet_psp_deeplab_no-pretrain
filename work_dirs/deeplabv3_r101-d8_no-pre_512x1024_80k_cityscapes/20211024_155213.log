@@ -1245,3 +1245,39 @@ after_val_epoch:
 2021-10-25 00:06:53,293 - mmseg - INFO - Iter [23900/80000]	lr: 7.293e-03, eta: 19:08:58, time: 1.136, data_time: 0.023, memory: 19204, decode.loss_seg: 0.3077, decode.acc_seg: 83.5911, aux.loss_seg: 0.1577, aux.acc_seg: 81.2440, loss: 0.4654
 2021-10-25 00:08:03,132 - mmseg - INFO - Iter [23950/80000]	lr: 7.288e-03, eta: 19:08:17, time: 1.398, data_time: 0.022, memory: 19204, decode.loss_seg: 0.3155, decode.acc_seg: 84.2541, aux.loss_seg: 0.1644, aux.acc_seg: 81.6141, loss: 0.4798
 2021-10-25 00:08:54,223 - mmseg - INFO - Saving checkpoint at 24000 iterations
+2021-10-25 00:11:07,161 - mmseg - INFO - per class results:
+2021-10-25 00:11:07,202 - mmseg - INFO - 
++---------------+-------+-------+
+|     Class     |  IoU  |  Acc  |
++---------------+-------+-------+
+|      road     | 95.63 | 98.32 |
+|    sidewalk   |  70.1 | 78.33 |
+|    building   | 85.72 | 94.61 |
+|      wall     | 26.09 | 29.55 |
+|     fence     | 34.84 | 41.97 |
+|      pole     | 47.23 | 56.77 |
+| traffic light | 37.14 | 42.75 |
+|  traffic sign | 58.09 | 72.48 |
+|   vegetation  | 88.12 | 93.06 |
+|    terrain    |  48.8 | 61.28 |
+|      sky      | 88.84 | 96.42 |
+|     person    |  60.0 | 86.68 |
+|     rider     | 19.41 | 21.93 |
+|      car      | 87.92 | 96.12 |
+|     truck     |  30.0 | 49.26 |
+|      bus      | 41.05 | 52.65 |
+|     train     |  2.93 |  3.05 |
+|   motorcycle  |  4.9  |  4.98 |
+|    bicycle    | 59.08 | 72.06 |
++---------------+-------+-------+
+2021-10-25 00:11:07,202 - mmseg - INFO - Summary:
+2021-10-25 00:11:07,202 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 92.13 | 51.89 | 60.65 |
++-------+-------+-------+
+2021-10-25 00:11:07,206 - mmseg - INFO - Exp name: deeplabv3_r101-d8_no-pre_512x1024_80k_cityscapes.py
+2021-10-25 00:11:07,207 - mmseg - INFO - Iter(val) [125]	aAcc: 0.9213, mIoU: 0.5189, mAcc: 0.6065, IoU.road: 0.9563, IoU.sidewalk: 0.7010, IoU.building: 0.8572, IoU.wall: 0.2609, IoU.fence: 0.3484, IoU.pole: 0.4723, IoU.traffic light: 0.3714, IoU.traffic sign: 0.5809, IoU.vegetation: 0.8812, IoU.terrain: 0.4880, IoU.sky: 0.8884, IoU.person: 0.6000, IoU.rider: 0.1941, IoU.car: 0.8792, IoU.truck: 0.3000, IoU.bus: 0.4105, IoU.train: 0.0293, IoU.motorcycle: 0.0490, IoU.bicycle: 0.5908, Acc.road: 0.9832, Acc.sidewalk: 0.7833, Acc.building: 0.9461, Acc.wall: 0.2955, Acc.fence: 0.4197, Acc.pole: 0.5677, Acc.traffic light: 0.4275, Acc.traffic sign: 0.7248, Acc.vegetation: 0.9306, Acc.terrain: 0.6128, Acc.sky: 0.9642, Acc.person: 0.8668, Acc.rider: 0.2193, Acc.car: 0.9612, Acc.truck: 0.4926, Acc.bus: 0.5265, Acc.train: 0.0305, Acc.motorcycle: 0.0498, Acc.bicycle: 0.7206
+2021-10-25 00:12:06,989 - mmseg - INFO - Iter [24050/80000]	lr: 7.276e-03, eta: 19:08:34, time: 3.663, data_time: 2.490, memory: 19204, decode.loss_seg: 0.3112, decode.acc_seg: 83.3646, aux.loss_seg: 0.1613, aux.acc_seg: 80.9945, loss: 0.4725
+2021-10-25 00:13:04,163 - mmseg - INFO - Iter [24100/80000]	lr: 7.270e-03, eta: 19:07:22, time: 1.144, data_time: 0.024, memory: 19204, decode.loss_seg: 0.2987, decode.acc_seg: 84.6223, aux.loss_seg: 0.1569, aux.acc_seg: 82.1883, loss: 0.4555
